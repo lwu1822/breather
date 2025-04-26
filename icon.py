@@ -3,11 +3,12 @@ import platform
 import os
 import subprocess
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QCursor
 from PySide6.QtCore import QTimer, Qt
 from desktop_notifier import DesktopNotifier, Urgency
 import asyncio
 import threading
+
 
 # make sure app shows up in macOS
 if platform.system() == "Darwin":
@@ -18,8 +19,6 @@ if platform.system() == "Darwin":
         app_mac.setActivationPolicy_(NSApplicationActivationPolicyRegular)
     except ImportError:
         pass
-
-
 
 # uses desktop_notifier library to display messages via terminal notifier
 notifier = DesktopNotifier()
@@ -131,7 +130,6 @@ def create_tray_app():
 
     menu.addSeparator()
     quit_action = menu.addAction("Quit")
-    tray.setContextMenu(menu)
 
     def show_notification(title, message):
         async def send_notification():
@@ -185,6 +183,9 @@ def create_tray_app():
                 stats_window.show()
                 stats_window.raise_()
                 stats_window.activateWindow()
+        elif reason == QSystemTrayIcon.Context:  # Right click
+            menu.popup(QCursor.pos())  # Show menu manually
+
 
     tray.activated.connect(on_tray_activated)
 
