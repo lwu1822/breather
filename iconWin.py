@@ -21,6 +21,7 @@ def create_tray_app():
     tray = QSystemTrayIcon()
     tray.setIcon(icon)
     tray.setVisible(True)
+    tray.setToolTip("My App")
 
     # Create the menu
     menu = QMenu()
