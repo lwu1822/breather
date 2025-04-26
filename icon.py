@@ -1,6 +1,7 @@
 import sys
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox
 from PySide6.QtGui import QIcon, QAction
+from PySide6.QtCore import QTimer
 
 def create_tray_app():
     app = QApplication(sys.argv)
@@ -9,12 +10,13 @@ def create_tray_app():
     app.setQuitOnLastWindowClosed(False)
 
     # Set up the icon
-    icon = QIcon("/Users/dumpling/Downloads/pfpq1.png")
+    icon1 = QIcon("/Users/dumpling/Downloads/pfpq1.png")
+    icon2 = QIcon("/Users/dumpling/Downloads/pfpq2.png")
   # Replace with your own .png or .ico file
 
     # Create the tray icon
     tray = QSystemTrayIcon()
-    tray.setIcon(icon)
+    tray.setIcon(icon1)
     tray.setVisible(True)
 
     # Create the menu
@@ -33,8 +35,16 @@ def create_tray_app():
     show_action.triggered.connect(lambda: QMessageBox.information(None, "Hello", "This is a tray app!"))
     quit_action.triggered.connect(app.quit)
 
-    sys.exit(app.exec_())
+    def update_icon():
+        tray.setIcon(icon2)
+      
+    timer = QTimer()
+    timer.timeout.connect(update_icon)
+    timer.setSingleShot(True)
+    timer.start(10000)
 
+    sys.exit(app.exec_())
+    
 
 if __name__ == "__main__":
     create_tray_app()
