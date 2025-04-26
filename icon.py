@@ -114,6 +114,12 @@ def create_tray_app():
     # Choose green as the default for glowing
     base_pixmap = green_pixmap
 
+    # Default message
+    greenm = "You're doing great!"
+    yellowm = "Relax a little, you got this!"
+    redm = "Maybe try taking a break?"
+    displaym = greenm
+
 
     # Tray setup
     tray = QSystemTrayIcon(green_icon)
@@ -152,16 +158,22 @@ def create_tray_app():
       nonlocal base_pixmap
       tray.setIcon(green_icon)
       base_pixmap = green_pixmap
+      nonlocal displaym
+      displaym = greenm
 
     def set_medium_stress():
       nonlocal base_pixmap
       tray.setIcon(yellow_icon)
       base_pixmap = yellow_pixmap
+      nonlocal displaym
+      displaym = yellowm
 
     def set_high_stress():
       nonlocal base_pixmap
       tray.setIcon(red_icon)
       base_pixmap = red_pixmap
+      nonlocal displaym
+      displaym = redm
 
     low_stress_action.triggered.connect(set_low_stress)
     medium_stress_action.triggered.connect(set_medium_stress)
@@ -183,7 +195,7 @@ def create_tray_app():
     QTimer.singleShot(1000, lambda: show_notification("You seem stressed", "Maybe take a break?"))
 
     # Connect menu actions
-    show_action.triggered.connect(lambda: show_notification("Stress Level", "You're doing great!"))
+    show_action.triggered.connect(lambda: show_notification("Stress Level", displaym))
     quit_action.triggered.connect(app.quit)
 
     # icon glowing/fading effect
