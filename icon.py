@@ -160,6 +160,7 @@ def create_tray_app():
       base_pixmap = green_pixmap
       nonlocal displaym
       displaym = greenm
+      QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
 
     def set_medium_stress():
       nonlocal base_pixmap
@@ -167,6 +168,7 @@ def create_tray_app():
       base_pixmap = yellow_pixmap
       nonlocal displaym
       displaym = yellowm
+      QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
 
     def set_high_stress():
       nonlocal base_pixmap
@@ -174,6 +176,7 @@ def create_tray_app():
       base_pixmap = red_pixmap
       nonlocal displaym
       displaym = redm
+      QTimer.singleShot(1000, lambda: show_notification("You seem stressed", displaym))
 
     low_stress_action.triggered.connect(set_low_stress)
     medium_stress_action.triggered.connect(set_medium_stress)
