@@ -19,6 +19,8 @@ if platform.system() == "Darwin":
     except ImportError:
         pass
 
+
+
 # uses desktop_notifier library to display messages via terminal notifier
 notifier = DesktopNotifier()
 
@@ -35,14 +37,17 @@ def create_tray_app():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
+    # Very cool: You can change the font and size of right clicking the icon
+    # font = QFont("DejaVu Sans Mono", 12)
+    # app.setFont(font)
+
     # --- Window setup ---
     stats_window = QWidget()
     stats_window.setWindowTitle("Breather Stats")
     stats_window.resize(320, 400)
     stats_window.setStyleSheet("""
         QWidget {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                        stop:0 #f0f4f8, stop:1 #d9e2ec);
+            background-color: #13122b;
             border-radius: 16px;
         }
     """)
@@ -52,10 +57,10 @@ def create_tray_app():
     layout.setSpacing(15)
 
     title_label = QLabel("Keyboard Stress Stats")
-    title_font = QFont("Arial", 20, QFont.Bold)
+    title_font = QFont("DejaVu Sans Mono", 18, QFont.Bold)
     title_label.setFont(title_font)
     title_label.setAlignment(Qt.AlignCenter)
-    title_label.setStyleSheet("color: #102a43;")
+    title_label.setStyleSheet("color: #d9b2ab;")
     layout.addWidget(title_label)
 
     def divider():
@@ -69,17 +74,19 @@ def create_tray_app():
 
     def stat_label(text, bold_part):
         label = QLabel()
-        label.setText(f"<b style='color:#243b53'>{bold_part}</b> {text}")
-        label.setStyleSheet("font-size: 14px; color: #334e68;")
+        font = QFont("DejaVu Sans Mono", 12)
+        label.setFont(font)
+        label.setText(f"<b style='color:#d9b2ab'>{bold_part}</b> {text}")
+        label.setStyleSheet("font-size: 14px; color: #b2edd2;")
         return label
 
     stats = [
-        ("words/min", "72"),
-        ("chars/min", "320"),
-        ("accuracy", "95%"),
-        ("most pressed", "[Space]"),
-        ("active typing", "42 min"),
-        ("idle time", "5 min"),
+        ("72 " + "words/min", "Typing Speed:"),
+        ("320 " + "chars/min", "Typing Speed:"),
+        ("95%", "Accuracy:"),
+        ("[Space]", "Most pressed key:"),
+        ("45 " + "minutes", "Active typing:"),
+        ("5 " + "minutes", "Idle time:"),
     ]
 
     for text, value in stats:
@@ -87,12 +94,12 @@ def create_tray_app():
 
     layout.addWidget(divider())
 
-    typing_mood_label = QLabel("<b style='color:#243b53'>Mood:</b> Focused 🧘")
-    typing_mood_label.setStyleSheet("font-size: 14px; color: #334e68;")
+    typing_mood_label = QLabel("<b style='color:#d9b2ab'>Mood:</b> Focused")
+    typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     layout.addWidget(typing_mood_label)
 
-    suggested_break_label = QLabel("<b style='color:#243b53'>Break in:</b> 10 min ⏳")
-    suggested_break_label.setStyleSheet("font-size: 14px; color: #334e68;")
+    suggested_break_label = QLabel("<b style='color:#d9b2ab'>Break in:</b> 10 min")
+    suggested_break_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     layout.addWidget(suggested_break_label)
 
     stats_window.setLayout(layout)
