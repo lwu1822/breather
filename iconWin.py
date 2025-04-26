@@ -22,6 +22,7 @@ def create_tray_app():
     tray.setIcon(icon)
     tray.setVisible(True)
     tray.setToolTip("My App")
+    tray.show()  # <-- the icon must be visible before showMessage()
 
     # Create the menu
     menu = QMenu()
@@ -38,6 +39,13 @@ def create_tray_app():
     # Connect actions
     show_action.triggered.connect(lambda: tray.showMessage("Stress Level", "You're doing great!", QSystemTrayIcon.Information, 1000))
     quit_action.triggered.connect(app.quit)
+
+    tray.showMessage(
+      "You seem stressed",
+      "Maybe take a break?",
+      QSystemTrayIcon.Information,
+      5000
+    )
 
     # Start the application loop
     sys.exit(app.exec())

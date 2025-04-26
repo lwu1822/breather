@@ -13,6 +13,7 @@ def create_tray_app():
     tray.setIcon(QIcon(base_pixmap))
     tray.setVisible(True)
     tray.setToolTip("Breather")
+    tray.show()  # <-- the icon must be visible before showMessage()
 
     # Tray menu
     menu = QMenu()
@@ -24,6 +25,13 @@ def create_tray_app():
     show_action.triggered.connect(lambda: tray.showMessage("Stress Level", "You're doing great!", QSystemTrayIcon.Information, 1000))
     quit_action.triggered.connect(app.quit)
     tray.setContextMenu(menu)
+
+    tray.showMessage(
+      "You seem stressed",
+      "Maybe take a break?",
+      QSystemTrayIcon.Information,
+      5000
+    )
 
     # Glow effect variables
     alpha = 0
