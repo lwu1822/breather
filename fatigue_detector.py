@@ -37,6 +37,32 @@ class DataQueue(deque):
         self.clean(event[0])
         self.append(event)
 
+    def katz_fd(self):
+    """
+    Compute the Katz fractal dimension of the data.
+    Returns NaN for length < 2.
+    """
+    N = len(x)
+    if N < 2:
+        return float('nan')
+
+    # 1) total curve length L
+    L = 0.0
+    for i in range(N-1):
+        diff = x[i+1] - x[i]
+        L += math.hypot(1, diff)       # sqrt(1 + diff^2)
+
+    # 2) maximum distance from the first point
+    d_max = 0.0
+    x0 = x[0]
+    for i, xi in enumerate(x):
+        d = math.hypot(i, xi - x0)    # sqrt(i^2 + (xi-x0)^2)
+        if d > d_max:
+            d_max = d
+
+    # 3) Katz dimension
+    return math.log(N) / math.log(N * d_max / L)
+
     @property
     def mean(self) -> float:
         self.clean(time())
