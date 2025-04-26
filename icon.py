@@ -145,7 +145,7 @@ def create_tray_app():
         base_pixmap = green_pixmap
         displaym = "You're doing great!"
         if is_glowing:
-            timer.start(100)
+            timer.start(200)
         QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
 
     def set_medium_stress():
@@ -163,7 +163,7 @@ def create_tray_app():
         base_pixmap = red_pixmap
         displaym = "Maybe try taking a break?"
         if is_glowing:
-            timer.start(100)
+            timer.start(50)
         QTimer.singleShot(1000, lambda: show_notification("You seem stressed", displaym))
 
     low_stress_action.triggered.connect(set_low_stress)
@@ -195,7 +195,7 @@ def create_tray_app():
         if alpha >= 255:
             alpha = 255
             direction = -1
-        elif alpha <= 50:
+        elif alpha <= 5:
             alpha = 50
             direction = 1
 
@@ -210,15 +210,13 @@ def create_tray_app():
         tray.setIcon(QIcon(glow_pixmap))
 
     timer.timeout.connect(update_fade)
-    timer.start(100)
+    timer.start(200)
 
     def toggle_glow():
         nonlocal is_glowing
         if is_glowing:
             timer.stop()
             tray.setIcon(QIcon(base_pixmap))  # Show static icon
-        else:
-            timer.start(100)
         is_glowing = not is_glowing
 
     toggle_glow_action.triggered.connect(toggle_glow)
@@ -228,7 +226,7 @@ def create_tray_app():
     quit_action.triggered.connect(app.quit)
 
     # Automatically display notification on start
-    QTimer.singleShot(1000, lambda: show_notification("You seem stressed", "Maybe take a break?"))
+    QTimer.singleShot(1000, lambda: show_notification("Breather", "Welcome to Breather!"))
 
     sys.exit(app.exec())
 
