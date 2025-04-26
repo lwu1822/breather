@@ -1,51 +1,78 @@
-import ctypes
 import sys
 import platform
 import os
-import subprocess
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor
 from PySide6.QtCore import QTimer
+from desktop_notifier import DesktopNotifier, Urgency
+import asyncio
+import threading
 
+# make sure app shows up in macOS
 if platform.system() == "Darwin":
     try:
         from Foundation import NSObject
         from AppKit import NSApplication, NSApp, NSApplicationActivationPolicyRegular
-        app = NSApplication.sharedApplication()
-        app.setActivationPolicy_(NSApplicationActivationPolicyRegular)
+        app_mac = NSApplication.sharedApplication()
+        app_mac.setActivationPolicy_(NSApplicationActivationPolicyRegular)
     except ImportError:
         pass
+
+# uses desktop_notifier library to display messages via terminal notifier
+notifier = DesktopNotifier()
+
+# prevent notification from being blocked by creating shared loop
+event_loop = asyncio.new_event_loop()
+def start_event_loop(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+loop_thread = threading.Thread(target=start_event_loop, args=(event_loop,), daemon=True)
+loop_thread.start()
 
 def create_tray_app():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
+    # load in icon
     base_pixmap = QPixmap("appIcon.png")
     tray = QSystemTrayIcon(QIcon(base_pixmap))
     tray.setVisible(True)
     tray.setToolTip("Breather")
-    tray.show()  # <-- the icon must be visible before showMessage()
+    tray.show()
 
+    # menubar options
     menu = QMenu()
     show_action = menu.addAction("Show Message")
     quit_action = menu.addAction("Quit")
     tray.setContextMenu(menu)
 
+    # display notification
     def show_notification(title, message):
-        if platform.system() == "Darwin":
-            script = f'display notification "{message}" with title "{title}"'
-            subprocess.run(["osascript", "-e", script])
-        else:
-            tray.showMessage(title, message, QSystemTrayIcon.Information, 5000)
+        async def send_notification():
+            try:
+                await notifier.send(
+                    title=title,
+                    message=message
+                )
+            except Exception as e:
+                print(f"Notification failed: {e}")
 
+        event_loop.call_soon_threadsafe(asyncio.create_task, send_notification())
+
+
+    # automatically display notification
     QTimer.singleShot(1000, lambda: show_notification("You seem stressed", "Maybe take a break?"))
+
+    # Connect menu actions
     show_action.triggered.connect(lambda: show_notification("Stress Level", "You're doing great!"))
     quit_action.triggered.connect(app.quit)
 
+    # icon glowing/fading effect
     alpha = 0
     direction = 1
 
-    def update_glow():
+    def update_fade():
         nonlocal alpha, direction
         alpha += direction * 10
         if alpha >= 255:
@@ -66,7 +93,7 @@ def create_tray_app():
         tray.setIcon(QIcon(glow_pixmap))
 
     timer = QTimer()
-    timer.timeout.connect(update_glow)
+    timer.timeout.connect(update_fade)
     timer.start(100)
 
     sys.exit(app.exec())
