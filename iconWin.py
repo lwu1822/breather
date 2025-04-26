@@ -10,7 +10,7 @@ def create_tray_app():
     app.setQuitOnLastWindowClosed(False)
 
     # Set up the icon (you can replace it with your own .png or .ico file)
-    icon_path = r"Untitled.png"  # Update with correct Windows path
+    icon_path = r"appIcon.png"  # Update with correct Windows path
     if not os.path.exists(icon_path):
         print(f"Icon file not found: {icon_path}")
         return  # Exit if the icon file doesn't exist

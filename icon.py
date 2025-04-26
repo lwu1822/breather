@@ -7,15 +7,21 @@ def create_tray_app():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-    base_pixmap = QPixmap("/Users/dumpling/Downloads/pfpq1.png")  # Your static image
+    base_pixmap = QPixmap("appIcon.png")  # Your static image
 
     tray = QSystemTrayIcon()
     tray.setIcon(QIcon(base_pixmap))
     tray.setVisible(True)
+    tray.setToolTip("Breather")
 
     # Tray menu
     menu = QMenu()
+    show_action = menu.addAction("Show Message")
+    menu.addSeparator()
     quit_action = menu.addAction("Quit")
+
+
+    show_action.triggered.connect(lambda: tray.showMessage("Stress Level", "You're doing great!", QSystemTrayIcon.Information, 1000))
     quit_action.triggered.connect(app.quit)
     tray.setContextMenu(menu)
 
