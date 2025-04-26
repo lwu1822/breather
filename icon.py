@@ -131,6 +131,9 @@ def create_tray_app():
     menu.addSeparator()
     quit_action = menu.addAction("Quit")
 
+    if not platform.system() == "Darwin":
+      tray.setContextMenu(menu)
+
     def show_notification(title, message):
         async def send_notification():
             try:
@@ -183,7 +186,7 @@ def create_tray_app():
                 stats_window.show()
                 stats_window.raise_()
                 stats_window.activateWindow()
-        elif reason == QSystemTrayIcon.Context:  # Right click
+        elif reason == QSystemTrayIcon.Context and platform.system() == "Darwin":  # Right click
             menu.popup(QCursor.pos())  # Show menu manually
 
 
