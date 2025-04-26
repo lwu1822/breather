@@ -1,0 +1,45 @@
+import sys
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
+from PySide6.QtGui import QIcon
+import os
+
+def create_tray_app():
+    app = QApplication(sys.argv)
+
+    # Make sure the app keeps running even without a visible window
+    app.setQuitOnLastWindowClosed(False)
+
+    # Set up the icon (you can replace it with your own .png or .ico file)
+    icon_path = r"C:\Users\me\Downloads\pfpq1.png"  # Update with correct Windows path
+    if not os.path.exists(icon_path):
+        print(f"Icon file not found: {icon_path}")
+        return  # Exit if the icon file doesn't exist
+    
+    icon = QIcon(icon_path)
+
+    # Create the tray icon
+    tray = QSystemTrayIcon()
+    tray.setIcon(icon)
+    tray.setVisible(True)
+
+    # Create the menu
+    menu = QMenu()
+
+    show_action = QAction("Show Message")
+    quit_action = QAction("Quit")
+
+    menu.addAction(show_action)
+    menu.addSeparator()
+    menu.addAction(quit_action)
+
+    tray.setContextMenu(menu)
+
+    # Connect actions
+    show_action.triggered.connect(lambda: tray.showMessage("Stress Level", "You're doing great!", QSystemTrayIcon.Information, 1000))
+    quit_action.triggered.connect(app.quit)
+
+    # Start the application loop
+    sys.exit(app.exec())
+
+if __name__ == "__main__":
+    create_tray_app()
