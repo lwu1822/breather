@@ -115,7 +115,7 @@ def create_tray_app():
 
     menu = QMenu()
     show_action = menu.addAction("Show Message")
-    toggle_glow_action = menu.addAction("Toggle Glow ✨")  # NEW: Toggle Glow button
+    toggle_glow_action = menu.addAction("Toggle Glow")  # NEW: Toggle Glow button
     menu.addSeparator()
 
     low_stress_action = menu.addAction("Set Low Stress (Green)")
