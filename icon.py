@@ -2,7 +2,7 @@ import sys
 import platform
 import os
 import subprocess
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame, QProgressBar
 from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QCursor
 from PySide6.QtCore import QTimer, Qt
 from desktop_notifier import DesktopNotifier, Urgency
@@ -102,6 +102,45 @@ def create_tray_app():
     layout.addWidget(suggested_break_label)
 
     stats_window.setLayout(layout)
+
+    break_progress = QProgressBar()
+    break_progress.setRange(0, 20)  # 600 seconds = 10 minutes
+    break_progress.setValue(0)
+    break_progress.setStyleSheet("""
+        QProgressBar {
+            border: 2px solid #b2edd2;
+            border-radius: 5px;
+            background-color: #13122b;
+            text-align: center;
+        }
+        QProgressBar::chunk {
+            background-color: #d9b2ab;
+        }
+    """)
+    layout.addWidget(break_progress)
+
+    break_time_seconds = 20  # 10 minutes
+    elapsed_seconds = 0
+
+    progress_timer = QTimer()
+    progress_timer.setInterval(1000)  # 1 second
+    progress_timer.start()
+
+    def update_break_progress():
+        nonlocal elapsed_seconds
+        elapsed_seconds += 1
+        break_progress.setValue(elapsed_seconds)
+        
+        minutes_remaining = max((break_time_seconds - elapsed_seconds) // 60, 0)
+        suggested_break_label.setText(f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min")
+
+        if elapsed_seconds >= break_time_seconds:
+            progress_timer.stop()
+            # maybe show a notification here too
+            show_notification("Time for a break!", "You've been typing for 10 minutes!")
+
+    progress_timer.timeout.connect(update_break_progress)
+
 
     # --- Load stress icons ---
     green_pixmap = QPixmap("images/green.png")
