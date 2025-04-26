@@ -9,7 +9,7 @@ def create_tray_app():
     app.setQuitOnLastWindowClosed(False)
 
     # Set up the icon
-    icon = QIcon("/Users/dumpling/Downloads/pfpq1.png")
+    icon = QIcon("Untitled.png")
   # Replace with your own .png or .ico file
 
     # Create the tray icon

@@ -2,7 +2,7 @@
 2. On Windows, open Powershell. On Linux, open terminal. Then, run `python3 -m venv venv`
 3. 
 
- a. On Windows, run `source .\venv\Scripts\Activate.ps1`
+ a. On Windows, run `.\venv\Scripts\Activate.ps1`
 
  b. On Linux, run `source venv/bin/activate`
  
