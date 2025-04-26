@@ -24,6 +24,7 @@ def create_tray_app():
     tray = QSystemTrayIcon(QIcon(base_pixmap))
     tray.setVisible(True)
     tray.setToolTip("Breather")
+    tray.show()  # <-- the icon must be visible before showMessage()
 
     menu = QMenu()
     show_action = menu.addAction("Show Message")
