@@ -1,6 +1,6 @@
 import sys
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QAction
-from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
+from PySide6.QtGui import QIcon, QAction
 import os
 
 def create_tray_app():
@@ -10,7 +10,7 @@ def create_tray_app():
     app.setQuitOnLastWindowClosed(False)
 
     # Set up the icon (you can replace it with your own .png or .ico file)
-    icon_path = r"C:\Users\me\Downloads\pfpq1.png"  # Update with correct Windows path
+    icon_path = r"Untitled.png"  # Update with correct Windows path
     if not os.path.exists(icon_path):
         print(f"Icon file not found: {icon_path}")
         return  # Exit if the icon file doesn't exist
