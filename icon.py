@@ -224,6 +224,11 @@ def create_tray_app():
         if is_glowing:
             timer.stop()
             tray.setIcon(QIcon(base_pixmap))  # Show static icon
+        else:
+            timer.stop()
+            if (displaym == "You're doing great!"): timer.start(200)
+            elif (displaym == "Relax a little, you got this!"): timer.start(100)
+            elif (displaym == "Maybe try taking a break?"): timer.start(50)
         is_glowing = not is_glowing
 
     toggle_glow_action.triggered.connect(toggle_glow)
