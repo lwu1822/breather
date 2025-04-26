@@ -35,8 +35,7 @@ def create_tray_app():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
-
-    # --- Create your window (initially hidden) ---
+    # --- Window setup ---
     stats_window = QWidget()
     stats_window.setWindowTitle("Breather Stats")
     stats_window.resize(320, 400)
@@ -52,7 +51,6 @@ def create_tray_app():
     layout.setContentsMargins(20, 20, 20, 20)
     layout.setSpacing(15)
 
-    # Top Title
     title_label = QLabel("Keyboard Stress Stats")
     title_font = QFont("Arial", 20, QFont.Bold)
     title_label.setFont(title_font)
@@ -69,7 +67,6 @@ def create_tray_app():
 
     layout.addWidget(divider())
 
-    # Stats section
     def stat_label(text, bold_part):
         label = QLabel()
         label.setText(f"<b style='color:#243b53'>{bold_part}</b> {text}")
@@ -90,7 +87,6 @@ def create_tray_app():
 
     layout.addWidget(divider())
 
-    # Mood and Break suggestion
     typing_mood_label = QLabel("<b style='color:#243b53'>Mood:</b> Focused 🧘")
     typing_mood_label.setStyleSheet("font-size: 14px; color: #334e68;")
     layout.addWidget(typing_mood_label)
@@ -101,8 +97,7 @@ def create_tray_app():
 
     stats_window.setLayout(layout)
 
-
-    # --- Load your different stress icons ---
+    # --- Load stress icons ---
     green_pixmap = QPixmap("images/green.png")
     yellow_pixmap = QPixmap("images/yellow.png")
     red_pixmap = QPixmap("images/red.png")
@@ -111,27 +106,18 @@ def create_tray_app():
     yellow_icon = QIcon(yellow_pixmap)
     red_icon = QIcon(red_pixmap)
 
-    # Choose green as the default for glowing
     base_pixmap = green_pixmap
+    displaym = "You're doing great!"
 
-    # Default message
-    greenm = "You're doing great!"
-    yellowm = "Relax a little, you got this!"
-    redm = "Maybe try taking a break?"
-    displaym = greenm
-
-
-    # Tray setup
-    tray = QSystemTrayIcon(green_icon)
+    tray = QSystemTrayIcon(QIcon(base_pixmap))
     tray.setVisible(True)
     tray.setToolTip("Breather")
-    tray.show()
 
-    # menubar options
     menu = QMenu()
     show_action = menu.addAction("Show Message")
+    toggle_glow_action = menu.addAction("Toggle Glow ✨")  # NEW: Toggle Glow button
+    menu.addSeparator()
 
-    
     low_stress_action = menu.addAction("Set Low Stress (Green)")
     medium_stress_action = menu.addAction("Set Medium Stress (Yellow)")
     high_stress_action = menu.addAction("Set High Stress (Red)")
@@ -140,7 +126,6 @@ def create_tray_app():
     quit_action = menu.addAction("Quit")
     tray.setContextMenu(menu)
 
-    # display notification
     def show_notification(title, message):
         async def send_notification():
             try:
@@ -153,30 +138,33 @@ def create_tray_app():
 
         event_loop.call_soon_threadsafe(asyncio.create_task, send_notification())
 
-
+    # --- Stress level functions ---
     def set_low_stress():
-      nonlocal base_pixmap
-      tray.setIcon(green_icon)
-      base_pixmap = green_pixmap
-      nonlocal displaym
-      displaym = greenm
-      QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
+        nonlocal base_pixmap, displaym
+        tray.setIcon(QIcon(green_pixmap))
+        base_pixmap = green_pixmap
+        displaym = "You're doing great!"
+        if is_glowing:
+            timer.start(100)
+        QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
 
     def set_medium_stress():
-      nonlocal base_pixmap
-      tray.setIcon(yellow_icon)
-      base_pixmap = yellow_pixmap
-      nonlocal displaym
-      displaym = yellowm
-      QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
+        nonlocal base_pixmap, displaym
+        tray.setIcon(QIcon(yellow_pixmap))
+        base_pixmap = yellow_pixmap
+        displaym = "Relax a little, you got this!"
+        if is_glowing:
+            timer.start(100)
+        QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
 
     def set_high_stress():
-      nonlocal base_pixmap
-      tray.setIcon(red_icon)
-      base_pixmap = red_pixmap
-      nonlocal displaym
-      displaym = redm
-      QTimer.singleShot(1000, lambda: show_notification("You seem stressed", displaym))
+        nonlocal base_pixmap, displaym
+        tray.setIcon(QIcon(red_pixmap))
+        base_pixmap = red_pixmap
+        displaym = "Maybe try taking a break?"
+        if is_glowing:
+            timer.start(100)
+        QTimer.singleShot(1000, lambda: show_notification("You seem stressed", displaym))
 
     low_stress_action.triggered.connect(set_low_stress)
     medium_stress_action.triggered.connect(set_medium_stress)
@@ -193,20 +181,16 @@ def create_tray_app():
 
     tray.activated.connect(on_tray_activated)
 
-
-    # automatically display notification
-    QTimer.singleShot(1000, lambda: show_notification("You seem stressed", "Maybe take a break?"))
-
-    # Connect menu actions
-    show_action.triggered.connect(lambda: show_notification("Stress Level", displaym))
-    quit_action.triggered.connect(app.quit)
-
-    # icon glowing/fading effect
+    # --- Glow / Fade logic ---
     alpha = 0
     direction = 1
+    is_glowing = True  # Control fading state
+
+    timer = QTimer()
 
     def update_fade():
         nonlocal alpha, direction
+
         alpha += direction * 10
         if alpha >= 255:
             alpha = 255
@@ -225,11 +209,29 @@ def create_tray_app():
 
         tray.setIcon(QIcon(glow_pixmap))
 
-    timer = QTimer()
     timer.timeout.connect(update_fade)
     timer.start(100)
 
+    def toggle_glow():
+        nonlocal is_glowing
+        if is_glowing:
+            timer.stop()
+            tray.setIcon(QIcon(base_pixmap))  # Show static icon
+        else:
+            timer.start(100)
+        is_glowing = not is_glowing
+
+    toggle_glow_action.triggered.connect(toggle_glow)
+
+    # --- Connect menu actions ---
+    show_action.triggered.connect(lambda: show_notification("Stress Level", displaym))
+    quit_action.triggered.connect(app.quit)
+
+    # Automatically display notification on start
+    QTimer.singleShot(1000, lambda: show_notification("You seem stressed", "Maybe take a break?"))
+
     sys.exit(app.exec())
+
 
 if __name__ == "__main__":
     create_tray_app()
