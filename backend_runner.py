@@ -12,6 +12,7 @@ class FatigueMonitor(threading.Thread):
         self.keyboard_stats = KeyboardStats()
         self._lock = threading.Lock()
         self._fatigue_history = DataQueue(max_time=120)
+        self.SAMPLES_CUTOFF = 600
 
         self.listener = keyboard.Listener(
             on_press=lambda k, i: kbd_on_event(k, True, self.keyboard_stats),
@@ -39,7 +40,11 @@ class FatigueMonitor(threading.Thread):
 
     def get_wpm_lifetime(self) -> float:
         with self._lock:
-            return self.keyboard_stats.wpm_baseline.mean
+            return (
+                self.keyboard_stats.wpm_baseline.mean
+                if self.keyboard_stats.wpm_baseline.n > self.SAMPLES_CUTOFF
+                else float("nan")
+            )
 
     def get_backspace_rate(self) -> float:
         with self._lock:
@@ -47,7 +52,14 @@ class FatigueMonitor(threading.Thread):
 
     def get_backspace_rate_lifetime(self) -> float:
         with self._lock:
-            return (1 - self.keyboard_stats.backspace_times.baseline.mean) * 100
+            return (
+                (1 - self.keyboard_stats.backspace_times.baseline.mean) * 100
+                if (
+                    self.keyboard_stats.backspace_times.baseline.n
+                    > self.SAMPLES_CUTOFF
+                )
+                else float("nan")
+            )
 
     def get_flight_time(self) -> float:
         with self._lock:
@@ -55,7 +67,12 @@ class FatigueMonitor(threading.Thread):
 
     def get_flight_time_lifetime(self) -> float:
         with self._lock:
-            return self.keyboard_stats.flight_times.baseline.mean
+            return (
+                self.keyboard_stats.flight_times.baseline.mean
+                if self.keyboard_stats.flight_times.baseline.n
+                > self.SAMPLES_CUTOFF
+                else float("nan")
+            )
 
     def get_hold_time(self) -> float:
         with self._lock:
@@ -63,7 +80,12 @@ class FatigueMonitor(threading.Thread):
 
     def get_hold_time_lifetime(self) -> float:
         with self._lock:
-            return self.keyboard_stats.hold_times.baseline.mean
+            return (
+                self.keyboard_stats.hold_times.baseline.mean
+                if self.keyboard_stats.hold_times.baseline.n
+                > self.SAMPLES_CUTOFF
+                else float("nan")
+            )
 
     def stop(self):
         self.listener.stop()
