@@ -129,7 +129,7 @@ def create_tray_app():
     tray.setToolTip("Breather")
 
     menu = QMenu()
-    show_action = menu.addAction("Show Message")
+    # show_action = menu.addAction("Show Message")
     toggle_glow_action = menu.addAction(
         "Toggle Glow"
     )  # NEW: Toggle Glow button
@@ -279,12 +279,12 @@ def create_tray_app():
 
     make_stat("wpm",       "Typing speed (last 30 seconds):",   "0 words/min")
     make_stat("wpm_lifetime",       "Typing speed (session):",   "0 words/min")
-    make_stat("accuracy",  "Accuracy (last 30 seconds):",       "–")
-    make_stat("accuracy_lifetime",  "Accuracy (session):",       "–")
-    make_stat("flight_time",  "Time between keyboard presses (last 30 seconds):",       "–")
-    make_stat("flight_time_lifetime",  "Time between keyboard presses (session):",       "–")
-    make_stat("hold_time",  "Key press time (last 30 seconds):",       "–")
-    make_stat("hold_time_lifetime",  "Key press time (session):",       "–")
+    make_stat("accuracy",  "Accuracy (last 30 seconds):",       "– %")
+    make_stat("accuracy_lifetime",  "Accuracy (session):",       "– %")
+    make_stat("flight_time",  "Time between keyboard presses (last 30 seconds):",       "– seconds")
+    make_stat("flight_time_lifetime",  "Time between keyboard presses (session):",       "– seconds")
+    make_stat("hold_time",  "Key press time (last 30 seconds):",       "– seconds")
+    make_stat("hold_time_lifetime",  "Key press time (session):",       "– seconds")
 
     layout.addWidget(divider())
 
@@ -332,22 +332,22 @@ def create_tray_app():
             f"<b style='color:#d9b2ab'>Typing speed (session):</b> {wpm_lifetime} words/min"
         )
         stat_labels["accuracy"].setText(
-            f"<b style='color:#d9b2ab'>Accuracy (last 30 seconds):</b> {accuracy}"
+            f"<b style='color:#d9b2ab'>Accuracy (last 30 seconds):</b> {accuracy}%"
         )
         stat_labels["accuracy_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Accuracy (session):</b> {accuracy_lifetime}"
+            f"<b style='color:#d9b2ab'>Accuracy (session):</b> {accuracy_lifetime}%"
         )
         stat_labels["flight_time"].setText(
-            f"<b style='color:#d9b2ab'>Time between keyboard presses (last 30 seconds):</b> {flight_time}"
+            f"<b style='color:#d9b2ab'>Time between keyboard presses (last 30 seconds):</b> {flight_time} seconds"
         )
         stat_labels["flight_time_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Time between keyboard presses (session):</b> {flight_time_lifetime}"
+            f"<b style='color:#d9b2ab'>Time between keyboard presses (session):</b> {flight_time_lifetime} seconds"
         )
         stat_labels["hold_time"].setText(
-            f"<b style='color:#d9b2ab'>Key press time (last 30 seconds):</b> {hold_time}"
+            f"<b style='color:#d9b2ab'>Key press time (last 30 seconds):</b> {hold_time} seconds"
         )
         stat_labels["hold_time_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Key press time (session):</b> {hold_time_lifetime}"
+            f"<b style='color:#d9b2ab'>Key press time (session):</b> {hold_time_lifetime} seconds"
         )
 
 
@@ -562,9 +562,9 @@ def create_tray_app():
         app.quit()
 
     # connect to dropdown menu
-    show_action.triggered.connect(
-        lambda: show_notification("Fatigue Level", displaym)
-    )
+    # show_action.triggered.connect(
+    #     lambda: show_notification("Fatigue Level", displaym)
+    # )
     quit_action.triggered.connect(quit_app)
 
     # welcome message
