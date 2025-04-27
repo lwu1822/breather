@@ -116,7 +116,7 @@ def create_tray_app():
     for text, value in stats:
         layout.addWidget(stat_label(text, value))
 
-    # layout.addWidget(divider())
+    layout.addWidget(divider())
 
     # typing_mood_label = QLabel("<b style='color:#d9b2ab'>Mood:</b> Focused")
     # typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
@@ -128,7 +128,7 @@ def create_tray_app():
     # suggested_break_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     # layout.addWidget(suggested_break_label)
 
-    # stats_window.setLayout(layout)
+    stats_window.setLayout(layout)
 
     # break_progress = QProgressBar()
     # break_progress.setRange(0, 20)  # 600 seconds = 10 minutes
