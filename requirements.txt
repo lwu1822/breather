@@ -1,4 +1,3 @@
-pyside6
+PySide6
 pynput
-destop-notifier
-keyboard
+desktop-notifier

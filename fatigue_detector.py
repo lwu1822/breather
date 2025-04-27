@@ -240,7 +240,7 @@ class KeyboardStats:
             + self.backspace_times.mean_zscore()
             - self.wpm_zscore()
         )
-        # print("          total:", total)  # DEBUG
+        print("          total:", total)  # DEBUG
         return total
 
 

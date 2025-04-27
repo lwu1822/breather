@@ -33,4 +33,3 @@
 - [ ] **flight time**
     - higher = fatigued
 
-

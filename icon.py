@@ -1,7 +1,25 @@
 import sys
 import platform
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame, QProgressBar, QMessageBox
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QCursor, QPalette
+from PySide6.QtWidgets import (
+    QApplication,
+    QSystemTrayIcon,
+    QMenu,
+    QWidget,
+    QLabel,
+    QVBoxLayout,
+    QFrame,
+    QProgressBar,
+    QMessageBox,
+)
+from PySide6.QtGui import (
+    QIcon,
+    QPixmap,
+    QPainter,
+    QColor,
+    QFont,
+    QCursor,
+    QPalette,
+)
 from PySide6.QtCore import QTimer, Qt
 from desktop_notifier import DesktopNotifier
 import asyncio
@@ -9,28 +27,33 @@ import threading
 from backend_runner import FatigueMonitor
 
 
-
-# make sure app shows up in macOS
-if platform.system() == "Darwin":
-    try:
-        from Foundation import NSObject
-        from AppKit import NSApplication, NSApp, NSApplicationActivationPolicyRegular
-        app_mac = NSApplication.sharedApplication()
-        app_mac.setActivationPolicy_(NSApplicationActivationPolicyRegular)
-    except ImportError:
-        pass
+# # make sure app shows up in macOS
+# if platform.system() == "Darwin":
+#     try:
+#         from Foundation import NSObject
+#         from AppKit import NSApplication, NSApp, NSApplicationActivationPolicyRegular
+#         app_mac = NSApplication.sharedApplication()
+#         app_mac.setActivationPolicy_(NSApplicationActivationPolicyRegular)
+#     except ImportError:
+#         pass
 
 # uses desktop_notifier library to display messages via terminal notifier
 notifier = DesktopNotifier()
 
 # prevent notification from being blocked by creating shared loop
 event_loop = asyncio.new_event_loop()
+
+
 def start_event_loop(loop):
     asyncio.set_event_loop(loop)
     loop.run_forever()
 
-loop_thread = threading.Thread(target=start_event_loop, args=(event_loop,), daemon=True)
+
+loop_thread = threading.Thread(
+    target=start_event_loop, args=(event_loop,), daemon=True
+)
 loop_thread.start()
+
 
 def create_tray_app():
     app = QApplication(sys.argv)
@@ -44,20 +67,20 @@ def create_tray_app():
     stats_window = QWidget()
     stats_window.setWindowTitle("Breather Stats")
     stats_window.resize(320, 400)
-    stats_window.setStyleSheet("""
+    stats_window.setStyleSheet(
+        """
         QWidget {
             background-color: #13122b;
             border-radius: 16px;
         }
-    """)
-
-    
+    """
+    )
 
     layout = QVBoxLayout()
     layout.setContentsMargins(20, 20, 20, 20)
     layout.setSpacing(15)
 
-    title_label = QLabel("Keyboard Stress Stats")
+    title_label = QLabel("Stats")
     title_font = QFont("DejaVu Sans Mono", 18, QFont.Bold)
     title_label.setFont(title_font)
     title_label.setAlignment(Qt.AlignCenter)
@@ -99,7 +122,9 @@ def create_tray_app():
     typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     layout.addWidget(typing_mood_label)
 
-    suggested_break_label = QLabel("<b style='color:#d9b2ab'>Break in:</b> 10 min")
+    suggested_break_label = QLabel(
+        "<b style='color:#d9b2ab'>Break in:</b> 10 min"
+    )
     suggested_break_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     layout.addWidget(suggested_break_label)
 
@@ -108,7 +133,8 @@ def create_tray_app():
     break_progress = QProgressBar()
     break_progress.setRange(0, 20)  # 600 seconds = 10 minutes
     break_progress.setValue(0)
-    break_progress.setStyleSheet("""
+    break_progress.setStyleSheet(
+        """
         QProgressBar {
             border: 2px solid #b2edd2;
             border-radius: 5px;
@@ -120,7 +146,8 @@ def create_tray_app():
         QProgressBar::chunk {
             background-color: #d9b2ab;
         }
-    """)
+    """
+    )
     layout.addWidget(break_progress)
 
     break_time_seconds = 20  # 10 minutes
@@ -135,17 +162,22 @@ def create_tray_app():
     break_time_seconds = 10  # (example) 5 minutes break
     current_cycle_seconds = work_time_seconds
 
-
     def update_break_progress():
         nonlocal elapsed_seconds, is_work_mode, current_cycle_seconds
         elapsed_seconds += 1
         break_progress.setValue(elapsed_seconds)
-        
-        minutes_remaining = max((current_cycle_seconds - elapsed_seconds) // 60, 0)
+
+        minutes_remaining = max(
+            (current_cycle_seconds - elapsed_seconds) // 60, 0
+        )
         if is_work_mode:
-            suggested_break_label.setText(f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min")
+            suggested_break_label.setText(
+                f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min"
+            )
         else:
-            suggested_break_label.setText(f"<b style='color:#d9b2ab'>Work resumes in:</b> {minutes_remaining} min")
+            suggested_break_label.setText(
+                f"<b style='color:#d9b2ab'>Work resumes in:</b> {minutes_remaining} min"
+            )
 
         if elapsed_seconds >= current_cycle_seconds:
             elapsed_seconds = 0
@@ -156,11 +188,14 @@ def create_tray_app():
 
                 msg_box = QMessageBox(stats_window)
                 msg_box.setWindowTitle("Start Break?")
-                msg_box.setText("You've finished your work session!\nStart your break now?")
+                msg_box.setText(
+                    "You've finished your work session!\nStart your break now?"
+                )
                 msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
                 # Full style sheet for entire QMessageBox (background, button)
-                msg_box.setStyleSheet("""
+                msg_box.setStyleSheet(
+                    """
                     QMessageBox {
                         background-color: #13122b;
                     }
@@ -180,7 +215,8 @@ def create_tray_app():
                         background-color: #b2edd2;
                         color: #13122b;
                     }
-                """)
+                """
+                )
 
                 reply = msg_box.exec()
 
@@ -189,7 +225,8 @@ def create_tray_app():
                     current_cycle_seconds = break_time_seconds
                     break_progress.setRange(0, current_cycle_seconds)
                     break_progress.setValue(0)
-                    break_progress.setStyleSheet("""
+                    break_progress.setStyleSheet(
+                        """
                         QProgressBar {
                             border: 2px solid #d9b2ab;
                             border-radius: 5px;
@@ -201,8 +238,11 @@ def create_tray_app():
                         QProgressBar::chunk {
                             background-color: #b2edd2;
                         }
-                    """)
-                    show_notification("Break Time!", "Relax and breathe for a bit!")
+                    """
+                    )
+                    show_notification(
+                        "Break Time!", "Relax and breathe for a bit!"
+                    )
                 else:
                     # If user says No, reset to new work session
                     is_work_mode = True
@@ -217,7 +257,8 @@ def create_tray_app():
                 msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
                 # Full style sheet for entire QMessageBox (background, button)
-                msg_box.setStyleSheet("""
+                msg_box.setStyleSheet(
+                    """
                     QMessageBox {
                         background-color: #13122b;
                     }
@@ -237,17 +278,18 @@ def create_tray_app():
                         background-color: #b2edd2;
                         color: #13122b;
                     }
-                """)
+                """
+                )
 
                 reply = msg_box.exec()
-
 
                 if reply == QMessageBox.Yes:
                     is_work_mode = True
                     current_cycle_seconds = work_time_seconds
                     break_progress.setRange(0, current_cycle_seconds)
                     break_progress.setValue(0)
-                    break_progress.setStyleSheet("""
+                    break_progress.setStyleSheet(
+                        """
                         QProgressBar {
                             border: 2px solid #d9b2ab;
                             border-radius: 5px;
@@ -259,7 +301,8 @@ def create_tray_app():
                         QProgressBar::chunk {
                             background-color: #b2edd2;
                         }
-                    """)
+                    """
+                    )
                     show_notification("Work Time!", "Time to grind!")
                 else:
                     # If user says No, reset to new work session
@@ -267,13 +310,11 @@ def create_tray_app():
                     current_cycle_seconds = break_time_seconds
                     break_progress.setRange(0, current_cycle_seconds)
                     break_progress.setValue(0)
-            
+
             break_progress.setRange(0, current_cycle_seconds)
             break_progress.setValue(0)
 
-
     progress_timer.timeout.connect(update_break_progress)
-
 
     # --- Load stress icons ---
     green_pixmap = QPixmap("images/green.png")
@@ -293,7 +334,9 @@ def create_tray_app():
 
     menu = QMenu()
     show_action = menu.addAction("Show Message")
-    toggle_glow_action = menu.addAction("Toggle Glow")  # NEW: Toggle Glow button
+    toggle_glow_action = menu.addAction(
+        "Toggle Glow"
+    )  # NEW: Toggle Glow button
     menu.addSeparator()
 
     low_stress_action = menu.addAction("Set Low Stress (Green)")
@@ -304,19 +347,18 @@ def create_tray_app():
     quit_action = menu.addAction("Quit")
 
     if not platform.system() == "Darwin":
-      tray.setContextMenu(menu)
+        tray.setContextMenu(menu)
 
     def show_notification(title, message):
         async def send_notification():
             try:
-                await notifier.send(
-                    title=title,
-                    message=message
-                )
+                await notifier.send(title=title, message=message)
             except Exception as e:
                 print(f"Notification failed: {e}")
 
-        event_loop.call_soon_threadsafe(asyncio.create_task, send_notification())
+        event_loop.call_soon_threadsafe(
+            asyncio.create_task, send_notification()
+        )
 
     # set fatigue level
     def set_low_stress():
@@ -326,7 +368,9 @@ def create_tray_app():
         displaym = "You're doing great!"
         if is_glowing:
             timer.start(200)
-        QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
+        QTimer.singleShot(
+            1000, lambda: show_notification("Stress Level", displaym)
+        )
 
     def set_medium_stress():
         nonlocal base_pixmap, displaym
@@ -335,7 +379,9 @@ def create_tray_app():
         displaym = "Relax a little, you got this!"
         if is_glowing:
             timer.start(100)
-        QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
+        QTimer.singleShot(
+            1000, lambda: show_notification("Stress Level", displaym)
+        )
 
     def set_high_stress():
         nonlocal base_pixmap, displaym
@@ -344,7 +390,9 @@ def create_tray_app():
         displaym = "Maybe try taking a break?"
         if is_glowing:
             timer.start(50)
-        QTimer.singleShot(1000, lambda: show_notification("You seem stressed", displaym))
+        QTimer.singleShot(
+            1000, lambda: show_notification("You seem stressed", displaym)
+        )
 
     low_stress_action.triggered.connect(set_low_stress)
     medium_stress_action.triggered.connect(set_medium_stress)
@@ -358,9 +406,10 @@ def create_tray_app():
                 stats_window.show()
                 stats_window.raise_()
                 stats_window.activateWindow()
-        elif reason == QSystemTrayIcon.Context and platform.system() == "Darwin":  # Right click
+        elif (
+            reason == QSystemTrayIcon.Context and platform.system() == "Darwin"
+        ):  # Right click
             menu.popup(QCursor.pos())  # Show menu manually
-
 
     tray.activated.connect(on_tray_activated)
 
@@ -402,33 +451,33 @@ def create_tray_app():
             tray.setIcon(QIcon(base_pixmap))  # Show static icon
         else:
             timer.stop()
-            if (displaym == "You're doing great!"): timer.start(200)
-            elif (displaym == "Relax a little, you got this!"): timer.start(100)
-            elif (displaym == "Maybe try taking a break?"): timer.start(50)
+            if displaym == "You're doing great!":
+                timer.start(200)
+            elif displaym == "Relax a little, you got this!":
+                timer.start(100)
+            elif displaym == "Maybe try taking a break?":
+                timer.start(50)
         is_glowing = not is_glowing
 
     toggle_glow_action.triggered.connect(toggle_glow)
-
 
     fatigue_monitor = FatigueMonitor()
     fatigue_monitor.start()
 
     fatigue_timer = QTimer()
-    fatigue_timer.setInterval(5000)  # 5 seconds
-    fatigue_timer.start()
+    fatigue_timer.setInterval(500)  # .5 seconds
 
-
-    last_level = None 
+    last_level = None
 
     def update_fatigue_status():
         nonlocal last_level
         fatigue = fatigue_monitor.get_latest_fatigue()
 
-        if fatigue >= 1.0:
+        if fatigue >= 1.25:
             level = "high"
             if level != last_level:
                 set_high_stress()
-        elif fatigue >= 0.5:
+        elif fatigue >= 0.25:
             level = "medium"
             if level != last_level:
                 set_medium_stress()
@@ -439,30 +488,30 @@ def create_tray_app():
 
         last_level = level
 
-    fatigue_timer.timeout.connect(update_fatigue_status)
-
-    fatigue_sum_timer = QTimer()
-    fatigue_sum_timer.setInterval(120000)  # 2 minutes = 120,000 ms
-    fatigue_sum_timer.start()
-
-    def check_fatigue_sum():
         total_fatigue = fatigue_monitor.get_fatigue_sum()
         if total_fatigue > 20:
-            show_notification("Consider taking a break!", "Your stress is building up!")
+            show_notification(
+                "Consider taking a break!", "Your stress is building up!"
+            )
+        print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
 
-    fatigue_sum_timer.timeout.connect(check_fatigue_sum)
+    fatigue_timer.timeout.connect(update_fatigue_status)
+    fatigue_timer.start()
 
     def quit_app():
         fatigue_monitor.stop()
         app.quit()
 
-
     # connect to dropdown menu
-    show_action.triggered.connect(lambda: show_notification("Stress Level", displaym))
+    show_action.triggered.connect(
+        lambda: show_notification("Stress Level", displaym)
+    )
     quit_action.triggered.connect(quit_app)
 
     # welcome message
-    QTimer.singleShot(1000, lambda: show_notification("Breather", "Welcome to Breather!"))
+    QTimer.singleShot(
+        1000, lambda: show_notification("Breather", "Welcome to Breather!")
+    )
 
     sys.exit(app.exec())
 
