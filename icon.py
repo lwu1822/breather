@@ -116,41 +116,41 @@ def create_tray_app():
     for text, value in stats:
         layout.addWidget(stat_label(text, value))
 
-    layout.addWidget(divider())
+    # layout.addWidget(divider())
 
-    typing_mood_label = QLabel("<b style='color:#d9b2ab'>Mood:</b> Focused")
-    typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
-    layout.addWidget(typing_mood_label)
+    # typing_mood_label = QLabel("<b style='color:#d9b2ab'>Mood:</b> Focused")
+    # typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
+    # layout.addWidget(typing_mood_label)
 
-    suggested_break_label = QLabel(
-        "<b style='color:#d9b2ab'>Break in:</b> 10 min"
-    )
-    suggested_break_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
-    layout.addWidget(suggested_break_label)
+    # suggested_break_label = QLabel(
+    #     "<b style='color:#d9b2ab'>Break in:</b> 10 min"
+    # )
+    # suggested_break_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
+    # layout.addWidget(suggested_break_label)
 
-    stats_window.setLayout(layout)
+    # stats_window.setLayout(layout)
 
-    break_progress = QProgressBar()
-    break_progress.setRange(0, 20)  # 600 seconds = 10 minutes
-    break_progress.setValue(0)
-    break_progress.setStyleSheet(
-        """
-        QProgressBar {
-            border: 2px solid #b2edd2;
-            border-radius: 5px;
-            background-color: #13122b;
-            text-align: center;
-            color: #ffffff;
-            font-weight: bold;
-        }
-        QProgressBar::chunk {
-            background-color: #d9b2ab;
-        }
-    """
-    )
-    layout.addWidget(break_progress)
+    # break_progress = QProgressBar()
+    # break_progress.setRange(0, 20)  # 600 seconds = 10 minutes
+    # break_progress.setValue(0)
+    # break_progress.setStyleSheet(
+    #     """
+    #     QProgressBar {
+    #         border: 2px solid #b2edd2;
+    #         border-radius: 5px;
+    #         background-color: #13122b;
+    #         text-align: center;
+    #         color: #ffffff;
+    #         font-weight: bold;
+    #     }
+    #     QProgressBar::chunk {
+    #         background-color: #d9b2ab;
+    #     }
+    # """
+    # )
+    # layout.addWidget(break_progress)
 
-    # FUTURE PROGRESS
+    # FUTURE PROGRESS: PROGRESS BAR FOR WORK/BREAK
 
     # break_time_seconds = 20  # 10 minutes
     # elapsed_seconds = 0
