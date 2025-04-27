@@ -107,7 +107,7 @@ def create_tray_app():
 
  
 
-    # --- Load stress icons ---
+    # --- Load fatigue icons ---
     green_pixmap = QPixmap("images/green.png")
     yellow_pixmap = QPixmap("images/yellow.png")
     red_pixmap = QPixmap("images/red.png")
@@ -130,9 +130,9 @@ def create_tray_app():
     )  # NEW: Toggle Glow button
     menu.addSeparator()
 
-    low_stress_action = menu.addAction("Set Low Stress (Green)")
-    medium_stress_action = menu.addAction("Set Medium Stress (Yellow)")
-    high_stress_action = menu.addAction("Set High Stress (Red)")
+    # low_fatigue_action = menu.addAction("Set Low Fatigue (Green)")
+    # medium_fatigue_action = menu.addAction("Set Medium Fatigue (Yellow)")
+    # high_fatigue_action = menu.addAction("Set High Fatigue (Red)")
 
     menu.addSeparator()
     quit_action = menu.addAction("Quit")
@@ -152,7 +152,7 @@ def create_tray_app():
         )
 
     # set fatigue level
-    def set_low_stress():
+    def set_low_fatigue():
         nonlocal base_pixmap, displaym
         tray.setIcon(QIcon(green_pixmap))
         base_pixmap = green_pixmap
@@ -160,10 +160,10 @@ def create_tray_app():
         if is_glowing:
             timer.start(200)
         QTimer.singleShot(
-            1000, lambda: show_notification("Stress Level", displaym)
+            1000, lambda: show_notification("Fatigue Level", displaym)
         )
 
-    def set_medium_stress():
+    def set_medium_fatigue():
         nonlocal base_pixmap, displaym
         tray.setIcon(QIcon(yellow_pixmap))
         base_pixmap = yellow_pixmap
@@ -171,10 +171,10 @@ def create_tray_app():
         if is_glowing:
             timer.start(100)
         QTimer.singleShot(
-            1000, lambda: show_notification("Stress Level", displaym)
+            1000, lambda: show_notification("Fatigue Level", displaym)
         )
 
-    def set_high_stress():
+    def set_high_fatigue():
         nonlocal base_pixmap, displaym
         tray.setIcon(QIcon(red_pixmap))
         base_pixmap = red_pixmap
@@ -182,12 +182,12 @@ def create_tray_app():
         if is_glowing:
             timer.start(50)
         QTimer.singleShot(
-            1000, lambda: show_notification("You seem stressed", displaym)
+            1000, lambda: show_notification("You seem fatigued", displaym)
         )
 
-    low_stress_action.triggered.connect(set_low_stress)
-    medium_stress_action.triggered.connect(set_medium_stress)
-    high_stress_action.triggered.connect(set_high_stress)
+    # low_fatigue_action.triggered.connect(set_low_fatigue)
+    # medium_fatigue_action.triggered.connect(set_medium_fatigue)
+    # high_fatigue_action.triggered.connect(set_high_fatigue)
 
     def on_tray_activated(reason):
         if reason == QSystemTrayIcon.Trigger:  # Left click
@@ -285,22 +285,22 @@ def create_tray_app():
         if fatigue >= 1.25:
             level = "high"
             if level != last_level:
-                set_high_stress()
+                set_high_fatigue()
         elif fatigue >= 0.25:
             level = "medium"
             if level != last_level:
-                set_medium_stress()
+                set_medium_fatigue()
         else:
             level = "low"
             if level != last_level:
-                set_low_stress()
+                set_low_fatigue()
 
         last_level = level
 
         total_fatigue = fatigue_monitor.get_fatigue_sum()
         if total_fatigue > 20:
             show_notification(
-                "Consider taking a break!", "Your stress is building up!"
+                "Consider taking a break!", "Your fatigue is building up!"
             )
         print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
 
@@ -541,7 +541,7 @@ def create_tray_app():
 
     # connect to dropdown menu
     show_action.triggered.connect(
-        lambda: show_notification("Stress Level", displaym)
+        lambda: show_notification("Fatigue Level", displaym)
     )
     quit_action.triggered.connect(quit_app)
 
