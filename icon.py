@@ -104,19 +104,236 @@ def create_tray_app():
         label.setStyleSheet("font-size: 14px; color: #b2edd2;")
         return label
 
-    stats = [
-        ("72 " + "words/min", "Typing Speed:"),
-        ("320 " + "chars/min", "Typing Speed:"),
-        ("95%", "Accuracy:"),
-        ("[Space]", "Most pressed key:"),
-        ("45 " + "minutes", "Active typing:"),
-        ("5 " + "minutes", "Idle time:"),
-    ]
 
-    for text, value in stats:
-        layout.addWidget(stat_label(text, value))
+ 
+
+    # --- Load stress icons ---
+    green_pixmap = QPixmap("images/green.png")
+    yellow_pixmap = QPixmap("images/yellow.png")
+    red_pixmap = QPixmap("images/red.png")
+
+    green_icon = QIcon(green_pixmap)
+    yellow_icon = QIcon(yellow_pixmap)
+    red_icon = QIcon(red_pixmap)
+
+    base_pixmap = green_pixmap
+    displaym = "You're doing great!"
+
+    tray = QSystemTrayIcon(QIcon(base_pixmap))
+    tray.setVisible(True)
+    tray.setToolTip("Breather")
+
+    menu = QMenu()
+    show_action = menu.addAction("Show Message")
+    toggle_glow_action = menu.addAction(
+        "Toggle Glow"
+    )  # NEW: Toggle Glow button
+    menu.addSeparator()
+
+    low_stress_action = menu.addAction("Set Low Stress (Green)")
+    medium_stress_action = menu.addAction("Set Medium Stress (Yellow)")
+    high_stress_action = menu.addAction("Set High Stress (Red)")
+
+    menu.addSeparator()
+    quit_action = menu.addAction("Quit")
+
+    if not platform.system() == "Darwin":
+        tray.setContextMenu(menu)
+
+    def show_notification(title, message):
+        async def send_notification():
+            try:
+                await notifier.send(title=title, message=message)
+            except Exception as e:
+                print(f"Notification failed: {e}")
+
+        event_loop.call_soon_threadsafe(
+            asyncio.create_task, send_notification()
+        )
+
+    # set fatigue level
+    def set_low_stress():
+        nonlocal base_pixmap, displaym
+        tray.setIcon(QIcon(green_pixmap))
+        base_pixmap = green_pixmap
+        displaym = "You're doing great!"
+        if is_glowing:
+            timer.start(200)
+        QTimer.singleShot(
+            1000, lambda: show_notification("Stress Level", displaym)
+        )
+
+    def set_medium_stress():
+        nonlocal base_pixmap, displaym
+        tray.setIcon(QIcon(yellow_pixmap))
+        base_pixmap = yellow_pixmap
+        displaym = "Relax a little, you got this!"
+        if is_glowing:
+            timer.start(100)
+        QTimer.singleShot(
+            1000, lambda: show_notification("Stress Level", displaym)
+        )
+
+    def set_high_stress():
+        nonlocal base_pixmap, displaym
+        tray.setIcon(QIcon(red_pixmap))
+        base_pixmap = red_pixmap
+        displaym = "Maybe try taking a break?"
+        if is_glowing:
+            timer.start(50)
+        QTimer.singleShot(
+            1000, lambda: show_notification("You seem stressed", displaym)
+        )
+
+    low_stress_action.triggered.connect(set_low_stress)
+    medium_stress_action.triggered.connect(set_medium_stress)
+    high_stress_action.triggered.connect(set_high_stress)
+
+    def on_tray_activated(reason):
+        if reason == QSystemTrayIcon.Trigger:  # Left click
+            if stats_window.isVisible():
+                stats_window.hide()
+            else:
+                stats_window.show()
+                stats_window.raise_()
+                stats_window.activateWindow()
+        elif (
+            reason == QSystemTrayIcon.Context and platform.system() == "Darwin"
+        ):  # Right click
+            menu.popup(QCursor.pos())  # Show menu manually
+
+    tray.activated.connect(on_tray_activated)
+
+    # --- Glow / Fade logic ---
+    alpha = 0
+    direction = 1
+    is_glowing = True  # Control fading state
+
+    timer = QTimer()
+
+    def update_fade():
+        nonlocal alpha, direction
+
+        alpha += direction * 10
+        if alpha >= 255:
+            alpha = 255
+            direction = -1
+        elif alpha <= 5:
+            alpha = 50
+            direction = 1
+
+        glow_pixmap = QPixmap(base_pixmap.size())
+        glow_pixmap.fill(QColor(0, 0, 0, 0))
+
+        painter = QPainter(glow_pixmap)
+        painter.setOpacity(alpha / 255.0)
+        painter.drawPixmap(0, 0, base_pixmap)
+        painter.end()
+
+        tray.setIcon(QIcon(glow_pixmap))
+
+    timer.timeout.connect(update_fade)
+    timer.start(200)
+
+    def toggle_glow():
+        nonlocal is_glowing
+        if is_glowing:
+            timer.stop()
+            tray.setIcon(QIcon(base_pixmap))  # Show static icon
+        else:
+            timer.stop()
+            if displaym == "You're doing great!":
+                timer.start(200)
+            elif displaym == "Relax a little, you got this!":
+                timer.start(100)
+            elif displaym == "Maybe try taking a break?":
+                timer.start(50)
+        is_glowing = not is_glowing
+
+    toggle_glow_action.triggered.connect(toggle_glow)
+
+    fatigue_monitor = FatigueMonitor()
+    fatigue_monitor.start()
+
+    fatigue_timer = QTimer()
+    fatigue_timer.setInterval(500)  # .5 seconds
+
+    last_level = None
+
+    stat_labels = {}          # keep references here
+
+    def make_stat(key, label, initial):
+        ql = QLabel()
+        ql.setFont(QFont("DejaVu Sans Mono", 12))
+        ql.setStyleSheet("font-size: 14px; color: #b2edd2;")
+        ql.setText(f"<b style='color:#d9b2ab'>{label}</b> {initial}")
+        layout.addWidget(ql)
+        stat_labels[key] = ql
+
+    make_stat("wpm",       "Typing speed:",   "0 words/min")
+    make_stat("accuracy",  "Accuracy:",       "–")
+    make_stat("favkey",    "Most-pressed:",   "–")
+    make_stat("active",    "Active typing:",  "0 min")
+    make_stat("idle",      "Idle time:",      "0 min")
 
     layout.addWidget(divider())
+
+    def update_fatigue_status():
+        nonlocal last_level
+        fatigue = fatigue_monitor.get_latest_fatigue()
+
+        if fatigue >= 1.25:
+            level = "high"
+            if level != last_level:
+                set_high_stress()
+        elif fatigue >= 0.25:
+            level = "medium"
+            if level != last_level:
+                set_medium_stress()
+        else:
+            level = "low"
+            if level != last_level:
+                set_low_stress()
+
+        last_level = level
+
+        total_fatigue = fatigue_monitor.get_fatigue_sum()
+        if total_fatigue > 20:
+            show_notification(
+                "Consider taking a break!", "Your stress is building up!"
+            )
+        print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
+
+        wpm       = fatigue_monitor.get_wpm()     # replace with real calc
+        print(fatigue_monitor.get_backspace_rate())
+        accuracy  = fatigue_monitor.get_backspace_rate()
+        fav_key   = "[Space]"
+        active_m  = 45
+        idle_m    = 5
+
+        stat_labels["wpm"].setText(
+            f"<b style='color:#d9b2ab'>Typing speed:</b> {wpm} words/min"
+        )
+
+        stat_labels["accuracy"].setText(
+            f"<b style='color:#d9b2ab'>Accuracy:</b> {accuracy}"
+        )
+        stat_labels["favkey"].setText(
+            f"<b style='color:#d9b2ab'>Most-pressed:</b> {fav_key}"
+        )
+        stat_labels["active"].setText(
+            f"<b style='color:#d9b2ab'>Active typing:</b> {active_m} minutes"
+        )
+        stat_labels["idle"].setText(
+            f"<b style='color:#d9b2ab'>Idle time:</b> {idle_m} minutes"
+        )
+
+
+    fatigue_timer.timeout.connect(update_fatigue_status)
+    fatigue_timer.start()
+
+
+    
 
     # typing_mood_label = QLabel("<b style='color:#d9b2ab'>Mood:</b> Focused")
     # typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
@@ -317,188 +534,6 @@ def create_tray_app():
     #         break_progress.setValue(0)
 
     # progress_timer.timeout.connect(update_break_progress)
-
-    # --- Load stress icons ---
-    green_pixmap = QPixmap("images/green.png")
-    yellow_pixmap = QPixmap("images/yellow.png")
-    red_pixmap = QPixmap("images/red.png")
-
-    green_icon = QIcon(green_pixmap)
-    yellow_icon = QIcon(yellow_pixmap)
-    red_icon = QIcon(red_pixmap)
-
-    base_pixmap = green_pixmap
-    displaym = "You're doing great!"
-
-    tray = QSystemTrayIcon(QIcon(base_pixmap))
-    tray.setVisible(True)
-    tray.setToolTip("Breather")
-
-    menu = QMenu()
-    show_action = menu.addAction("Show Message")
-    toggle_glow_action = menu.addAction(
-        "Toggle Glow"
-    )  # NEW: Toggle Glow button
-    menu.addSeparator()
-
-    low_stress_action = menu.addAction("Set Low Stress (Green)")
-    medium_stress_action = menu.addAction("Set Medium Stress (Yellow)")
-    high_stress_action = menu.addAction("Set High Stress (Red)")
-
-    menu.addSeparator()
-    quit_action = menu.addAction("Quit")
-
-    if not platform.system() == "Darwin":
-        tray.setContextMenu(menu)
-
-    def show_notification(title, message):
-        async def send_notification():
-            try:
-                await notifier.send(title=title, message=message)
-            except Exception as e:
-                print(f"Notification failed: {e}")
-
-        event_loop.call_soon_threadsafe(
-            asyncio.create_task, send_notification()
-        )
-
-    # set fatigue level
-    def set_low_stress():
-        nonlocal base_pixmap, displaym
-        tray.setIcon(QIcon(green_pixmap))
-        base_pixmap = green_pixmap
-        displaym = "You're doing great!"
-        if is_glowing:
-            timer.start(200)
-        QTimer.singleShot(
-            1000, lambda: show_notification("Stress Level", displaym)
-        )
-
-    def set_medium_stress():
-        nonlocal base_pixmap, displaym
-        tray.setIcon(QIcon(yellow_pixmap))
-        base_pixmap = yellow_pixmap
-        displaym = "Relax a little, you got this!"
-        if is_glowing:
-            timer.start(100)
-        QTimer.singleShot(
-            1000, lambda: show_notification("Stress Level", displaym)
-        )
-
-    def set_high_stress():
-        nonlocal base_pixmap, displaym
-        tray.setIcon(QIcon(red_pixmap))
-        base_pixmap = red_pixmap
-        displaym = "Maybe try taking a break?"
-        if is_glowing:
-            timer.start(50)
-        QTimer.singleShot(
-            1000, lambda: show_notification("You seem stressed", displaym)
-        )
-
-    low_stress_action.triggered.connect(set_low_stress)
-    medium_stress_action.triggered.connect(set_medium_stress)
-    high_stress_action.triggered.connect(set_high_stress)
-
-    def on_tray_activated(reason):
-        if reason == QSystemTrayIcon.Trigger:  # Left click
-            if stats_window.isVisible():
-                stats_window.hide()
-            else:
-                stats_window.show()
-                stats_window.raise_()
-                stats_window.activateWindow()
-        elif (
-            reason == QSystemTrayIcon.Context and platform.system() == "Darwin"
-        ):  # Right click
-            menu.popup(QCursor.pos())  # Show menu manually
-
-    tray.activated.connect(on_tray_activated)
-
-    # --- Glow / Fade logic ---
-    alpha = 0
-    direction = 1
-    is_glowing = True  # Control fading state
-
-    timer = QTimer()
-
-    def update_fade():
-        nonlocal alpha, direction
-
-        alpha += direction * 10
-        if alpha >= 255:
-            alpha = 255
-            direction = -1
-        elif alpha <= 5:
-            alpha = 50
-            direction = 1
-
-        glow_pixmap = QPixmap(base_pixmap.size())
-        glow_pixmap.fill(QColor(0, 0, 0, 0))
-
-        painter = QPainter(glow_pixmap)
-        painter.setOpacity(alpha / 255.0)
-        painter.drawPixmap(0, 0, base_pixmap)
-        painter.end()
-
-        tray.setIcon(QIcon(glow_pixmap))
-
-    timer.timeout.connect(update_fade)
-    timer.start(200)
-
-    def toggle_glow():
-        nonlocal is_glowing
-        if is_glowing:
-            timer.stop()
-            tray.setIcon(QIcon(base_pixmap))  # Show static icon
-        else:
-            timer.stop()
-            if displaym == "You're doing great!":
-                timer.start(200)
-            elif displaym == "Relax a little, you got this!":
-                timer.start(100)
-            elif displaym == "Maybe try taking a break?":
-                timer.start(50)
-        is_glowing = not is_glowing
-
-    toggle_glow_action.triggered.connect(toggle_glow)
-
-    fatigue_monitor = FatigueMonitor()
-    fatigue_monitor.start()
-
-    fatigue_timer = QTimer()
-    fatigue_timer.setInterval(500)  # .5 seconds
-
-    last_level = None
-
-    def update_fatigue_status():
-        nonlocal last_level
-        fatigue = fatigue_monitor.get_latest_fatigue()
-
-        if fatigue >= 1.25:
-            level = "high"
-            if level != last_level:
-                set_high_stress()
-        elif fatigue >= 0.25:
-            level = "medium"
-            if level != last_level:
-                set_medium_stress()
-        else:
-            level = "low"
-            if level != last_level:
-                set_low_stress()
-
-        last_level = level
-
-        total_fatigue = fatigue_monitor.get_fatigue_sum()
-        if total_fatigue > 20:
-            show_notification(
-                "Consider taking a break!", "Your stress is building up!"
-            )
-        print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
-
-    fatigue_timer.timeout.connect(update_fatigue_status)
-    fatigue_timer.start()
 
     def quit_app():
         fatigue_monitor.stop()
