@@ -325,29 +325,29 @@ def create_tray_app():
         hold_time_lifetime  = 0 if math.isnan(fatigue_monitor.get_hold_time_lifetime()) else fatigue_monitor.get_hold_time_lifetime()
 
         stat_labels["wpm"].setText(
-            f"<b style='color:#d9b2ab'>Typing speed (last 30 seconds):</b> {wpm} words/min"
+            f"<b style='color:#d9b2ab'>Typing speed (last 30 seconds):</b> {wpm:.1f} words/min"
         )
 
         stat_labels["wpm_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Typing speed (session):</b> {wpm_lifetime} words/min"
+            f"<b style='color:#d9b2ab'>Typing speed (session):</b> {wpm_lifetime:.1f} words/min"
         )
         stat_labels["accuracy"].setText(
-            f"<b style='color:#d9b2ab'>Accuracy (last 30 seconds):</b> {accuracy}"
+            f"<b style='color:#d9b2ab'>Accuracy (last 30 seconds):</b> {accuracy:.2f}%"
         )
         stat_labels["accuracy_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Accuracy (session):</b> {accuracy_lifetime}"
+            f"<b style='color:#d9b2ab'>Accuracy (session):</b> {accuracy_lifetime:.2f}%"
         )
         stat_labels["flight_time"].setText(
-            f"<b style='color:#d9b2ab'>Time between keyboard presses (last 30 seconds):</b> {flight_time}"
+            f"<b style='color:#d9b2ab'>Time between keyboard presses (last 30 seconds):</b> {flight_time:.3f} s"
         )
         stat_labels["flight_time_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Time between keyboard presses (session):</b> {flight_time_lifetime}"
+            f"<b style='color:#d9b2ab'>Time between keyboard presses (session):</b> {flight_time_lifetime:.3f} s"
         )
         stat_labels["hold_time"].setText(
-            f"<b style='color:#d9b2ab'>Key press time (last 30 seconds):</b> {hold_time}"
+            f"<b style='color:#d9b2ab'>Key press time (last 30 seconds):</b> {hold_time:.3f} s"
         )
         stat_labels["hold_time_lifetime"].setText(
-            f"<b style='color:#d9b2ab'>Key press time (session):</b> {hold_time_lifetime}"
+            f"<b style='color:#d9b2ab'>Key press time (session):</b> {hold_time_lifetime:.3f} s"
         )
 
 
