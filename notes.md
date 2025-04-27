@@ -8,7 +8,7 @@
   - time between backspace and previous key event
   - mu only
 
-- [ ] **fractal dimension of latency**: time between consecutive key presses/releases
+- [x] **fractal dimension of latency**: time between consecutive key presses/releases
   - tracks motor irregularity
 
 - [x] **backspace rate**: % of keystrokes that are backspaces
@@ -21,4 +21,16 @@
 - [ ] **burst pause**:
   - longer micro-pauses = waning focus
   - median?
+
+----
+
+- [ ] **wpm**
+    - lower = fatigued
+- [ ] **backspace rate**
+    - higher = fatigued
+- [ ] **hold time**
+    - higher = fatigued
+- [ ] **flight time**
+    - higher = fatigued
+
 
