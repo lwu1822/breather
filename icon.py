@@ -25,6 +25,7 @@ from desktop_notifier import DesktopNotifier
 import asyncio
 import threading
 from backend_runner import FatigueMonitor
+import time
 
 
 # # make sure app shows up in macOS
@@ -56,6 +57,9 @@ loop_thread.start()
 
 
 def create_tray_app():
+    RED_NOTIFY_COOLDOWN = 120        # seconds
+    last_red_alert = 0.0 
+
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
@@ -167,15 +171,25 @@ def create_tray_app():
             timer.start(100)
 
     def set_high_fatigue():
-        nonlocal base_pixmap, displaym
+        nonlocal base_pixmap, displaym, last_red_alert
         tray.setIcon(QIcon(red_pixmap))
         base_pixmap = red_pixmap
         displaym = "Maybe try taking a break?"
+
+        now = time.time()
+        if now - last_red_alert >= RED_NOTIFY_COOLDOWN:
+            QTimer.singleShot(
+                1000,
+                lambda: show_notification("You seem fatigued",
+                                          "Maybe try taking a break?")
+            )
+            print("now: " + str(now), file=open("log.log", 'a'))
+            print(now - last_red_alert, file=open("log.log", 'a'))
+            last_red_alert = now
+
         if is_glowing:
             timer.start(50)
-        QTimer.singleShot(
-            1000, lambda: show_notification("You seem fatigued", displaym)
-        )
+
 
     # low_fatigue_action.triggered.connect(set_low_fatigue)
     # medium_fatigue_action.triggered.connect(set_medium_fatigue)
@@ -289,12 +303,12 @@ def create_tray_app():
 
         last_level = level
 
-        total_fatigue = fatigue_monitor.get_fatigue_sum()
-        if total_fatigue > 20:
-            show_notification(
-                "Consider taking a break!", "Your fatigue is building up!"
-            )
-        print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
+        # total_fatigue = fatigue_monitor.get_fatigue_sum()
+        # if total_fatigue > 20:
+        #     show_notification(
+        #         "Consider taking a break!", "Your fatigue is building up!"
+        #     )
+        # print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
 
         wpm       = fatigue_monitor.get_wpm()     # replace with real calc
         print(fatigue_monitor.get_backspace_rate())
