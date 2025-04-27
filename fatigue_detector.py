@@ -200,7 +200,8 @@ class KeyboardStats:
             press_event = self.unreleased.pop(event.key, None)
             if press_event:
                 hold_time = event.time - press_event.time
-                self.hold_times.push((event.time, hold_time))
+                if hold_time < 0.5:  # not just holding the key down
+                    self.hold_times.push((event.time, hold_time))
 
     def backspace_rate(self) -> float:
         self.backspace_times.clean(time())
@@ -214,12 +215,27 @@ class KeyboardStats:
         self.press_times.clean(time())
         if len(self.press_times) < 2:
             return 0
-        res = (
-            len(self.press_times)
-            / (self.press_times[-1][0] - self.press_times[0][0])
-            * 60
-            / 5  # 5 chars per word
-        )
+        i_actual = 0
+        for i, (t1, t2) in enumerate(pairwise(self.press_times)):
+            if t2[0] - t1[0] > 5:  # long pause
+                i_actual = i
+
+        if i_actual == 0:
+            res = (
+                len(self.press_times)
+                / (self.press_times[-1][0] - self.press_times[0][0])
+                * 60
+                / 5  # 5 chars per word
+            )
+        else:
+            if len(self.press_times) - i_actual < 2:
+                return 0
+            res = (
+                len(self.press_times)
+                / (self.press_times[-1][0] - self.press_times[i_actual][0])
+                * 60
+                / 5  # 5 chars per word
+            )
         # print("WPM:", res)  # DEBUG
         return res
 

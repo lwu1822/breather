@@ -33,5 +33,3 @@
 - [ ] **flight time**
     - higher = fatigued
 
-Hi my name is Prajwal Vandana and I'm a CS student at UCSB. I like to code,
-play video games, and also 

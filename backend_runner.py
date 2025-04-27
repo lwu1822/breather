@@ -39,7 +39,7 @@ class FatigueMonitor(threading.Thread):
 
     def get_wpm_lifetime(self) -> float:
         with self._lock:
-            return self.keyboard_stats.press_times.baseline.mean
+            return self.keyboard_stats.wpm_baseline.mean
 
     def get_backspace_rate(self) -> float:
         with self._lock:
