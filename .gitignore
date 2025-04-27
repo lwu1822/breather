@@ -2,3 +2,5 @@ venv
 test*.py
 __pycache__/*
 pycache/*
+*.log
+notes.md
