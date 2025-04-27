@@ -276,11 +276,14 @@ def create_tray_app():
         layout.addWidget(ql)
         stat_labels[key] = ql
 
-    make_stat("wpm",       "Typing speed:",   "0 words/min")
-    make_stat("accuracy",  "Accuracy:",       "–")
-    make_stat("favkey",    "Most-pressed:",   "–")
-    make_stat("active",    "Active typing:",  "0 min")
-    make_stat("idle",      "Idle time:",      "0 min")
+    make_stat("wpm",       "Typing speed (last 30 seconds):",   "0 words/min")
+    make_stat("wpm_lifetime",       "Typing speed (session):",   "0 words/min")
+    make_stat("accuracy",  "Accuracy (last 30 seconds):",       "–")
+    make_stat("accuracy_lifetime",  "Accuracy (session):",       "–")
+    make_stat("flight_time",  "Time between keyboard presses (last 30 seconds):",       "–")
+    make_stat("flight_time_lifetime",  "Time between keyboard presses (session):",       "–")
+    make_stat("hold_time",  "Key press time (last 30 seconds):",       "–")
+    make_stat("hold_time_lifetime",  "Key press time (session):",       "–")
 
     layout.addWidget(divider())
 
@@ -310,28 +313,40 @@ def create_tray_app():
         #     )
         # print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
 
-        wpm       = fatigue_monitor.get_wpm()     # replace with real calc
-        print(fatigue_monitor.get_backspace_rate())
+        wpm       = fatigue_monitor.get_wpm()     
+        wpm_lifetime       = fatigue_monitor.get_wpm_lifetime()
+        # print(fatigue_monitor.get_backspace_rate())
         accuracy  = fatigue_monitor.get_backspace_rate()
-        fav_key   = "[Space]"
-        active_m  = 45
-        idle_m    = 5
+        accuracy_lifetime  = fatigue_monitor.get_backspace_rate_lifetime()
+        flight_time  = fatigue_monitor.get_flight_time()
+        flight_time_lifetime  = fatigue_monitor.get_flight_time_lifetime()
+        hold_time  = fatigue_monitor.get_hold_time()
+        hold_time_lifetime  = fatigue_monitor.get_hold_time_lifetime()
 
         stat_labels["wpm"].setText(
-            f"<b style='color:#d9b2ab'>Typing speed:</b> {wpm} words/min"
+            f"<b style='color:#d9b2ab'>Typing speed (last 30 seconds):</b> {wpm} words/min"
         )
 
+        stat_labels["wpm_lifetime"].setText(
+            f"<b style='color:#d9b2ab'>Typing speed (session):</b> {wpm_lifetime} words/min"
+        )
         stat_labels["accuracy"].setText(
-            f"<b style='color:#d9b2ab'>Accuracy:</b> {accuracy}"
+            f"<b style='color:#d9b2ab'>Accuracy (last 30 seconds):</b> {accuracy}"
         )
-        stat_labels["favkey"].setText(
-            f"<b style='color:#d9b2ab'>Most-pressed:</b> {fav_key}"
+        stat_labels["accuracy_lifetime"].setText(
+            f"<b style='color:#d9b2ab'>Accuracy (session):</b> {accuracy_lifetime}"
         )
-        stat_labels["active"].setText(
-            f"<b style='color:#d9b2ab'>Active typing:</b> {active_m} minutes"
+        stat_labels["flight_time"].setText(
+            f"<b style='color:#d9b2ab'>Time between keyboard presses (last 30 seconds):</b> {flight_time}"
         )
-        stat_labels["idle"].setText(
-            f"<b style='color:#d9b2ab'>Idle time:</b> {idle_m} minutes"
+        stat_labels["flight_time_lifetime"].setText(
+            f"<b style='color:#d9b2ab'>Time between keyboard presses (session):</b> {flight_time_lifetime}"
+        )
+        stat_labels["hold_time"].setText(
+            f"<b style='color:#d9b2ab'>Key press time (last 30 seconds):</b> {hold_time}"
+        )
+        stat_labels["hold_time_lifetime"].setText(
+            f"<b style='color:#d9b2ab'>Key press time (session):</b> {hold_time_lifetime}"
         )
 
 
