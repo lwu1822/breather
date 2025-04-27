@@ -39,10 +39,7 @@ class FatigueMonitor(threading.Thread):
     
     def get_backspace_rate(self) -> float:
         with self._lock:
-            try:
-                return (1 - self.backspace_rate()) * 100
-            except:
-                return 100
+            return (1 - self.keyboard_stats.backspace_rate()) * 100
 
     def stop(self):
         self.listener.stop()
