@@ -108,8 +108,10 @@ def create_tray_app():
         QProgressBar {
             border: 2px solid #b2edd2;
             border-radius: 5px;
-            background-color: #ffffff;
+            background-color: #13122b;
             text-align: center;
+            color: #ffffff;
+            font-weight: bold;
         }
         QProgressBar::chunk {
             background-color: #d9b2ab;
