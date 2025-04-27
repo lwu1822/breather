@@ -6,6 +6,8 @@ from PySide6.QtCore import QTimer, Qt
 from desktop_notifier import DesktopNotifier
 import asyncio
 import threading
+from backend_runner import FatigueMonitor
+
 
 
 # make sure app shows up in macOS
@@ -48,6 +50,8 @@ def create_tray_app():
             border-radius: 16px;
         }
     """)
+
+    
 
     layout = QVBoxLayout()
     layout.setContentsMargins(20, 20, 20, 20)
@@ -405,9 +409,57 @@ def create_tray_app():
 
     toggle_glow_action.triggered.connect(toggle_glow)
 
+
+    fatigue_monitor = FatigueMonitor()
+    fatigue_monitor.start()
+
+    fatigue_timer = QTimer()
+    fatigue_timer.setInterval(5000)  # 5 seconds
+    fatigue_timer.start()
+
+
+    last_level = None 
+
+    def update_fatigue_status():
+        nonlocal last_level
+        fatigue = fatigue_monitor.get_latest_fatigue()
+
+        if fatigue >= 1.0:
+            level = "high"
+            if level != last_level:
+                set_high_stress()
+        elif fatigue >= 0.5:
+            level = "medium"
+            if level != last_level:
+                set_medium_stress()
+        else:
+            level = "low"
+            if level != last_level:
+                set_low_stress()
+
+        last_level = level
+
+    fatigue_timer.timeout.connect(update_fatigue_status)
+
+    fatigue_sum_timer = QTimer()
+    fatigue_sum_timer.setInterval(120000)  # 2 minutes = 120,000 ms
+    fatigue_sum_timer.start()
+
+    def check_fatigue_sum():
+        total_fatigue = fatigue_monitor.get_fatigue_sum()
+        if total_fatigue > 20:
+            show_notification("Consider taking a break!", "Your stress is building up!")
+
+    fatigue_sum_timer.timeout.connect(check_fatigue_sum)
+
+    def quit_app():
+        fatigue_monitor.stop()
+        app.quit()
+
+
     # connect to dropdown menu
     show_action.triggered.connect(lambda: show_notification("Stress Level", displaym))
-    quit_action.triggered.connect(app.quit)
+    quit_action.triggered.connect(quit_app)
 
     # welcome message
     QTimer.singleShot(1000, lambda: show_notification("Breather", "Welcome to Breather!"))
