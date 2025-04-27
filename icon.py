@@ -26,6 +26,7 @@ import asyncio
 import threading
 from backend_runner import FatigueMonitor
 import time
+import math
 
 
 # # make sure app shows up in macOS
@@ -314,14 +315,14 @@ def create_tray_app():
         # print(f"Fatigue: {fatigue:.2f} (Total: {total_fatigue:.2f})")
 
         wpm       = fatigue_monitor.get_wpm()     
-        wpm_lifetime       = fatigue_monitor.get_wpm_lifetime()
+        wpm_lifetime       = 0 if math.isnan(fatigue_monitor.get_wpm_lifetime()) else fatigue_monitor.get_wpm_lifetime()
         # print(fatigue_monitor.get_backspace_rate())
         accuracy  = fatigue_monitor.get_backspace_rate()
-        accuracy_lifetime  = fatigue_monitor.get_backspace_rate_lifetime()
+        accuracy_lifetime  = 100 if math.isnan(fatigue_monitor.get_backspace_rate_lifetime()) else fatigue_monitor.get_backspace_rate_lifetime()
         flight_time  = fatigue_monitor.get_flight_time()
-        flight_time_lifetime  = fatigue_monitor.get_flight_time_lifetime()
+        flight_time_lifetime  = 0 if math.isnan(fatigue_monitor.get_flight_time_lifetime()) else fatigue_monitor.get_flight_time_lifetime()
         hold_time  = fatigue_monitor.get_hold_time()
-        hold_time_lifetime  = fatigue_monitor.get_hold_time_lifetime()
+        hold_time_lifetime  = 0 if math.isnan(fatigue_monitor.get_hold_time_lifetime()) else fatigue_monitor.get_hold_time_lifetime()
 
         stat_labels["wpm"].setText(
             f"<b style='color:#d9b2ab'>Typing speed (last 30 seconds):</b> {wpm} words/min"
