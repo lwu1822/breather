@@ -2,12 +2,13 @@ import sys
 import platform
 import os
 import subprocess
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame, QProgressBar
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QCursor
 from PySide6.QtCore import QTimer, Qt
 from desktop_notifier import DesktopNotifier, Urgency
 import asyncio
 import threading
+
 
 # make sure app shows up in macOS
 if platform.system() == "Darwin":
@@ -35,14 +36,17 @@ def create_tray_app():
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
 
+    # Very cool: You can change the font and size of right clicking the icon
+    # font = QFont("DejaVu Sans Mono", 12)
+    # app.setFont(font)
+
     # --- Window setup ---
     stats_window = QWidget()
     stats_window.setWindowTitle("Breather Stats")
     stats_window.resize(320, 400)
     stats_window.setStyleSheet("""
         QWidget {
-            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                                        stop:0 #f0f4f8, stop:1 #d9e2ec);
+            background-color: #13122b;
             border-radius: 16px;
         }
     """)
@@ -52,10 +56,10 @@ def create_tray_app():
     layout.setSpacing(15)
 
     title_label = QLabel("Keyboard Stress Stats")
-    title_font = QFont("Arial", 20, QFont.Bold)
+    title_font = QFont("DejaVu Sans Mono", 18, QFont.Bold)
     title_label.setFont(title_font)
     title_label.setAlignment(Qt.AlignCenter)
-    title_label.setStyleSheet("color: #102a43;")
+    title_label.setStyleSheet("color: #d9b2ab;")
     layout.addWidget(title_label)
 
     def divider():
@@ -69,17 +73,19 @@ def create_tray_app():
 
     def stat_label(text, bold_part):
         label = QLabel()
-        label.setText(f"<b style='color:#243b53'>{bold_part}</b> {text}")
-        label.setStyleSheet("font-size: 14px; color: #334e68;")
+        font = QFont("DejaVu Sans Mono", 12)
+        label.setFont(font)
+        label.setText(f"<b style='color:#d9b2ab'>{bold_part}</b> {text}")
+        label.setStyleSheet("font-size: 14px; color: #b2edd2;")
         return label
 
     stats = [
-        ("words/min", "72"),
-        ("chars/min", "320"),
-        ("accuracy", "95%"),
-        ("most pressed", "[Space]"),
-        ("active typing", "42 min"),
-        ("idle time", "5 min"),
+        ("72 " + "words/min", "Typing Speed:"),
+        ("320 " + "chars/min", "Typing Speed:"),
+        ("95%", "Accuracy:"),
+        ("[Space]", "Most pressed key:"),
+        ("45 " + "minutes", "Active typing:"),
+        ("5 " + "minutes", "Idle time:"),
     ]
 
     for text, value in stats:
@@ -87,15 +93,54 @@ def create_tray_app():
 
     layout.addWidget(divider())
 
-    typing_mood_label = QLabel("<b style='color:#243b53'>Mood:</b> Focused 🧘")
-    typing_mood_label.setStyleSheet("font-size: 14px; color: #334e68;")
+    typing_mood_label = QLabel("<b style='color:#d9b2ab'>Mood:</b> Focused")
+    typing_mood_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     layout.addWidget(typing_mood_label)
 
-    suggested_break_label = QLabel("<b style='color:#243b53'>Break in:</b> 10 min ⏳")
-    suggested_break_label.setStyleSheet("font-size: 14px; color: #334e68;")
+    suggested_break_label = QLabel("<b style='color:#d9b2ab'>Break in:</b> 10 min")
+    suggested_break_label.setStyleSheet("font-size: 14px; color: #b2edd2;")
     layout.addWidget(suggested_break_label)
 
     stats_window.setLayout(layout)
+
+    break_progress = QProgressBar()
+    break_progress.setRange(0, 20)  # 600 seconds = 10 minutes
+    break_progress.setValue(0)
+    break_progress.setStyleSheet("""
+        QProgressBar {
+            border: 2px solid #b2edd2;
+            border-radius: 5px;
+            background-color: #13122b;
+            text-align: center;
+        }
+        QProgressBar::chunk {
+            background-color: #d9b2ab;
+        }
+    """)
+    layout.addWidget(break_progress)
+
+    break_time_seconds = 20  # 10 minutes
+    elapsed_seconds = 0
+
+    progress_timer = QTimer()
+    progress_timer.setInterval(1000)  # 1 second
+    progress_timer.start()
+
+    def update_break_progress():
+        nonlocal elapsed_seconds
+        elapsed_seconds += 1
+        break_progress.setValue(elapsed_seconds)
+        
+        minutes_remaining = max((break_time_seconds - elapsed_seconds) // 60, 0)
+        suggested_break_label.setText(f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min")
+
+        if elapsed_seconds >= break_time_seconds:
+            progress_timer.stop()
+            # maybe show a notification here too
+            show_notification("Time for a break!", "You've been typing for 10 minutes!")
+
+    progress_timer.timeout.connect(update_break_progress)
+
 
     # --- Load stress icons ---
     green_pixmap = QPixmap("images/green.png")
@@ -124,7 +169,9 @@ def create_tray_app():
 
     menu.addSeparator()
     quit_action = menu.addAction("Quit")
-    tray.setContextMenu(menu)
+
+    if not platform.system() == "Darwin":
+      tray.setContextMenu(menu)
 
     def show_notification(title, message):
         async def send_notification():
@@ -145,7 +192,7 @@ def create_tray_app():
         base_pixmap = green_pixmap
         displaym = "You're doing great!"
         if is_glowing:
-            timer.start(100)
+            timer.start(200)
         QTimer.singleShot(1000, lambda: show_notification("Stress Level", displaym))
 
     def set_medium_stress():
@@ -163,7 +210,7 @@ def create_tray_app():
         base_pixmap = red_pixmap
         displaym = "Maybe try taking a break?"
         if is_glowing:
-            timer.start(100)
+            timer.start(50)
         QTimer.singleShot(1000, lambda: show_notification("You seem stressed", displaym))
 
     low_stress_action.triggered.connect(set_low_stress)
@@ -178,6 +225,9 @@ def create_tray_app():
                 stats_window.show()
                 stats_window.raise_()
                 stats_window.activateWindow()
+        elif reason == QSystemTrayIcon.Context and platform.system() == "Darwin":  # Right click
+            menu.popup(QCursor.pos())  # Show menu manually
+
 
     tray.activated.connect(on_tray_activated)
 
@@ -195,7 +245,7 @@ def create_tray_app():
         if alpha >= 255:
             alpha = 255
             direction = -1
-        elif alpha <= 50:
+        elif alpha <= 5:
             alpha = 50
             direction = 1
 
@@ -210,7 +260,7 @@ def create_tray_app():
         tray.setIcon(QIcon(glow_pixmap))
 
     timer.timeout.connect(update_fade)
-    timer.start(100)
+    timer.start(200)
 
     def toggle_glow():
         nonlocal is_glowing
@@ -218,7 +268,10 @@ def create_tray_app():
             timer.stop()
             tray.setIcon(QIcon(base_pixmap))  # Show static icon
         else:
-            timer.start(100)
+            timer.stop()
+            if (displaym == "You're doing great!"): timer.start(200)
+            elif (displaym == "Relax a little, you got this!"): timer.start(100)
+            elif (displaym == "Maybe try taking a break?"): timer.start(50)
         is_glowing = not is_glowing
 
     toggle_glow_action.triggered.connect(toggle_glow)
@@ -228,7 +281,7 @@ def create_tray_app():
     quit_action.triggered.connect(app.quit)
 
     # Automatically display notification on start
-    QTimer.singleShot(1000, lambda: show_notification("You seem stressed", "Maybe take a break?"))
+    QTimer.singleShot(1000, lambda: show_notification("Breather", "Welcome to Breather!"))
 
     sys.exit(app.exec())
 
