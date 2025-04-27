@@ -1,11 +1,9 @@
 import sys
 import platform
-import os
-import subprocess
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame, QProgressBar
-from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QCursor
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel, QVBoxLayout, QFrame, QProgressBar, QMessageBox
+from PySide6.QtGui import QIcon, QPixmap, QPainter, QColor, QFont, QCursor, QPalette
 from PySide6.QtCore import QTimer, Qt
-from desktop_notifier import DesktopNotifier, Urgency
+from desktop_notifier import DesktopNotifier
 import asyncio
 import threading
 
@@ -110,7 +108,7 @@ def create_tray_app():
         QProgressBar {
             border: 2px solid #b2edd2;
             border-radius: 5px;
-            background-color: #13122b;
+            background-color: #ffffff;
             text-align: center;
         }
         QProgressBar::chunk {
@@ -126,18 +124,147 @@ def create_tray_app():
     progress_timer.setInterval(1000)  # 1 second
     progress_timer.start()
 
+    is_work_mode = True
+    work_time_seconds = 20  # (example) 10 minutes work
+    break_time_seconds = 10  # (example) 5 minutes break
+    current_cycle_seconds = work_time_seconds
+
+
     def update_break_progress():
-        nonlocal elapsed_seconds
+        nonlocal elapsed_seconds, is_work_mode, current_cycle_seconds
         elapsed_seconds += 1
         break_progress.setValue(elapsed_seconds)
         
-        minutes_remaining = max((break_time_seconds - elapsed_seconds) // 60, 0)
-        suggested_break_label.setText(f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min")
+        minutes_remaining = max((current_cycle_seconds - elapsed_seconds) // 60, 0)
+        if is_work_mode:
+            suggested_break_label.setText(f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min")
+        else:
+            suggested_break_label.setText(f"<b style='color:#d9b2ab'>Work resumes in:</b> {minutes_remaining} min")
 
-        if elapsed_seconds >= break_time_seconds:
-            progress_timer.stop()
-            # maybe show a notification here too
-            show_notification("Time for a break!", "You've been typing for 10 minutes!")
+        if elapsed_seconds >= current_cycle_seconds:
+            elapsed_seconds = 0
+            if is_work_mode:
+                # Finished work session
+                elapsed_seconds = 0
+                # Ask the user if they want to start break
+
+                msg_box = QMessageBox(stats_window)
+                msg_box.setWindowTitle("Start Break?")
+                msg_box.setText("You've finished your work session!\nStart your break now?")
+                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
+                # Full style sheet for entire QMessageBox (background, button)
+                msg_box.setStyleSheet("""
+                    QMessageBox {
+                        background-color: #13122b;
+                    }
+                    QLabel {
+                        color: #b2edd2;
+                        font-size: 14px;
+                        font-family: 'DejaVu Sans Mono';
+                    }
+                    QPushButton {
+                        background-color: #d9b2ab;
+                        color: #13122b;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-weight: bold;
+                    }
+                    QPushButton:hover {
+                        background-color: #b2edd2;
+                        color: #13122b;
+                    }
+                """)
+
+                reply = msg_box.exec()
+
+                if reply == QMessageBox.Yes:
+                    is_work_mode = False
+                    current_cycle_seconds = break_time_seconds
+                    break_progress.setRange(0, current_cycle_seconds)
+                    break_progress.setValue(0)
+                    break_progress.setStyleSheet("""
+                        QProgressBar {
+                            border: 2px solid #d9b2ab;
+                            border-radius: 5px;
+                            background-color: #13122b;
+                            text-align: center;
+                            color: #ffffff;
+                            font-weight: bold;
+                        }
+                        QProgressBar::chunk {
+                            background-color: #b2edd2;
+                        }
+                    """)
+                    show_notification("Break Time!", "Relax and breathe for a bit!")
+                else:
+                    # If user says No, reset to new work session
+                    is_work_mode = True
+                    current_cycle_seconds = work_time_seconds
+                    break_progress.setRange(0, current_cycle_seconds)
+                    break_progress.setValue(0)
+            else:
+                # Switching to Break Mode
+                msg_box = QMessageBox(stats_window)
+                msg_box.setWindowTitle("End Break?")
+                msg_box.setText("Break's over! Ready to work again?")
+                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
+                # Full style sheet for entire QMessageBox (background, button)
+                msg_box.setStyleSheet("""
+                    QMessageBox {
+                        background-color: #13122b;
+                    }
+                    QLabel {
+                        color: #b2edd2;
+                        font-size: 14px;
+                        font-family: 'DejaVu Sans Mono';
+                    }
+                    QPushButton {
+                        background-color: #d9b2ab;
+                        color: #13122b;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        font-weight: bold;
+                    }
+                    QPushButton:hover {
+                        background-color: #b2edd2;
+                        color: #13122b;
+                    }
+                """)
+
+                reply = msg_box.exec()
+
+
+                if reply == QMessageBox.Yes:
+                    is_work_mode = True
+                    current_cycle_seconds = work_time_seconds
+                    break_progress.setRange(0, current_cycle_seconds)
+                    break_progress.setValue(0)
+                    break_progress.setStyleSheet("""
+                        QProgressBar {
+                            border: 2px solid #d9b2ab;
+                            border-radius: 5px;
+                            background-color: #13122b;
+                            text-align: center;
+                            color: #ffffff;
+                            font-weight: bold;
+                        }
+                        QProgressBar::chunk {
+                            background-color: #b2edd2;
+                        }
+                    """)
+                    show_notification("Work Time!", "Time to grind!")
+                else:
+                    # If user says No, reset to new work session
+                    is_work_mode = False
+                    current_cycle_seconds = break_time_seconds
+                    break_progress.setRange(0, current_cycle_seconds)
+                    break_progress.setValue(0)
+            
+            break_progress.setRange(0, current_cycle_seconds)
+            break_progress.setValue(0)
+
 
     progress_timer.timeout.connect(update_break_progress)
 
@@ -185,7 +312,7 @@ def create_tray_app():
 
         event_loop.call_soon_threadsafe(asyncio.create_task, send_notification())
 
-    # --- Stress level functions ---
+    # set fatigue level
     def set_low_stress():
         nonlocal base_pixmap, displaym
         tray.setIcon(QIcon(green_pixmap))
@@ -276,11 +403,11 @@ def create_tray_app():
 
     toggle_glow_action.triggered.connect(toggle_glow)
 
-    # --- Connect menu actions ---
+    # connect to dropdown menu
     show_action.triggered.connect(lambda: show_notification("Stress Level", displaym))
     quit_action.triggered.connect(app.quit)
 
-    # Automatically display notification on start
+    # welcome message
     QTimer.singleShot(1000, lambda: show_notification("Breather", "Welcome to Breather!"))
 
     sys.exit(app.exec())
