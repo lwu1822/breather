@@ -156,23 +156,15 @@ def create_tray_app():
         nonlocal base_pixmap, displaym
         tray.setIcon(QIcon(green_pixmap))
         base_pixmap = green_pixmap
-        displaym = "You're doing great!"
         if is_glowing:
             timer.start(200)
-        QTimer.singleShot(
-            1000, lambda: show_notification("Fatigue Level", displaym)
-        )
 
     def set_medium_fatigue():
         nonlocal base_pixmap, displaym
         tray.setIcon(QIcon(yellow_pixmap))
         base_pixmap = yellow_pixmap
-        displaym = "Relax a little, you got this!"
         if is_glowing:
             timer.start(100)
-        QTimer.singleShot(
-            1000, lambda: show_notification("Fatigue Level", displaym)
-        )
 
     def set_high_fatigue():
         nonlocal base_pixmap, displaym
