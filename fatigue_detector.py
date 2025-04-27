@@ -268,10 +268,10 @@ def main():
     )
     listener.join()
 
-    while True:
-        # poll
-        fatigue = keyboard_stats.fatigue()
-        __import__('time').sleep(5)
+    # while True:
+    #     # poll
+    #     fatigue = keyboard_stats.fatigue()
+    #     __import__('time').sleep(5)
 
     # try:
     #     with keyboard.Listener(

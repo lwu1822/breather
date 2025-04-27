@@ -36,10 +36,34 @@ class FatigueMonitor(threading.Thread):
     def get_wpm(self) -> float:
         with self._lock:
             return self.keyboard_stats.wpm()
-    
+
+    def get_wpm_lifetime(self) -> float:
+        with self._lock:
+            return self.keyboard_stats.press_times.baseline.mean
+
     def get_backspace_rate(self) -> float:
         with self._lock:
             return (1 - self.keyboard_stats.backspace_rate()) * 100
+
+    def get_backspace_rate_lifetime(self) -> float:
+        with self._lock:
+            return (1 - self.keyboard_stats.backspace_times.baseline.mean) * 100
+
+    def get_flight_time(self) -> float:
+        with self._lock:
+            return self.keyboard_stats.flight_times.mean()
+
+    def get_flight_time_lifetime(self) -> float:
+        with self._lock:
+            return self.keyboard_stats.flight_times.baseline.mean
+
+    def get_hold_time(self) -> float:
+        with self._lock:
+            return self.keyboard_stats.hold_times.mean()
+
+    def get_hold_time_lifetime(self) -> float:
+        with self._lock:
+            return self.keyboard_stats.hold_times.baseline.mean
 
     def stop(self):
         self.listener.stop()
