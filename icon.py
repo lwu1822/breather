@@ -150,171 +150,173 @@ def create_tray_app():
     )
     layout.addWidget(break_progress)
 
-    break_time_seconds = 20  # 10 minutes
-    elapsed_seconds = 0
+    # FUTURE PROGRESS
 
-    progress_timer = QTimer()
-    progress_timer.setInterval(1000)  # 1 second
-    progress_timer.start()
+    # break_time_seconds = 20  # 10 minutes
+    # elapsed_seconds = 0
 
-    is_work_mode = True
-    work_time_seconds = 20  # (example) 10 minutes work
-    break_time_seconds = 10  # (example) 5 minutes break
-    current_cycle_seconds = work_time_seconds
+    # progress_timer = QTimer()
+    # progress_timer.setInterval(1000)  # 1 second
+    # progress_timer.start()
 
-    def update_break_progress():
-        nonlocal elapsed_seconds, is_work_mode, current_cycle_seconds
-        elapsed_seconds += 1
-        break_progress.setValue(elapsed_seconds)
+    # is_work_mode = True
+    # work_time_seconds = 20  # (example) 10 minutes work
+    # break_time_seconds = 10  # (example) 5 minutes break
+    # current_cycle_seconds = work_time_seconds
 
-        minutes_remaining = max(
-            (current_cycle_seconds - elapsed_seconds) // 60, 0
-        )
-        if is_work_mode:
-            suggested_break_label.setText(
-                f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min"
-            )
-        else:
-            suggested_break_label.setText(
-                f"<b style='color:#d9b2ab'>Work resumes in:</b> {minutes_remaining} min"
-            )
+    # def update_break_progress():
+    #     nonlocal elapsed_seconds, is_work_mode, current_cycle_seconds
+    #     elapsed_seconds += 1
+    #     break_progress.setValue(elapsed_seconds)
 
-        if elapsed_seconds >= current_cycle_seconds:
-            elapsed_seconds = 0
-            if is_work_mode:
-                # Finished work session
-                elapsed_seconds = 0
-                # Ask the user if they want to start break
+    #     minutes_remaining = max(
+    #         (current_cycle_seconds - elapsed_seconds) // 60, 0
+    #     )
+    #     if is_work_mode:
+    #         suggested_break_label.setText(
+    #             f"<b style='color:#d9b2ab'>Break in:</b> {minutes_remaining} min"
+    #         )
+    #     else:
+    #         suggested_break_label.setText(
+    #             f"<b style='color:#d9b2ab'>Work resumes in:</b> {minutes_remaining} min"
+    #         )
 
-                msg_box = QMessageBox(stats_window)
-                msg_box.setWindowTitle("Start Break?")
-                msg_box.setText(
-                    "You've finished your work session!\nStart your break now?"
-                )
-                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+    #     if elapsed_seconds >= current_cycle_seconds:
+    #         elapsed_seconds = 0
+    #         if is_work_mode:
+    #             # Finished work session
+    #             elapsed_seconds = 0
+    #             # Ask the user if they want to start break
 
-                # Full style sheet for entire QMessageBox (background, button)
-                msg_box.setStyleSheet(
-                    """
-                    QMessageBox {
-                        background-color: #13122b;
-                    }
-                    QLabel {
-                        color: #b2edd2;
-                        font-size: 14px;
-                        font-family: 'DejaVu Sans Mono';
-                    }
-                    QPushButton {
-                        background-color: #d9b2ab;
-                        color: #13122b;
-                        padding: 6px 12px;
-                        border-radius: 6px;
-                        font-weight: bold;
-                    }
-                    QPushButton:hover {
-                        background-color: #b2edd2;
-                        color: #13122b;
-                    }
-                """
-                )
+    #             msg_box = QMessageBox(stats_window)
+    #             msg_box.setWindowTitle("Start Break?")
+    #             msg_box.setText(
+    #                 "You've finished your work session!\nStart your break now?"
+    #             )
+    #             msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
-                reply = msg_box.exec()
+    #             # Full style sheet for entire QMessageBox (background, button)
+    #             msg_box.setStyleSheet(
+    #                 """
+    #                 QMessageBox {
+    #                     background-color: #13122b;
+    #                 }
+    #                 QLabel {
+    #                     color: #b2edd2;
+    #                     font-size: 14px;
+    #                     font-family: 'DejaVu Sans Mono';
+    #                 }
+    #                 QPushButton {
+    #                     background-color: #d9b2ab;
+    #                     color: #13122b;
+    #                     padding: 6px 12px;
+    #                     border-radius: 6px;
+    #                     font-weight: bold;
+    #                 }
+    #                 QPushButton:hover {
+    #                     background-color: #b2edd2;
+    #                     color: #13122b;
+    #                 }
+    #             """
+    #             )
 
-                if reply == QMessageBox.Yes:
-                    is_work_mode = False
-                    current_cycle_seconds = break_time_seconds
-                    break_progress.setRange(0, current_cycle_seconds)
-                    break_progress.setValue(0)
-                    break_progress.setStyleSheet(
-                        """
-                        QProgressBar {
-                            border: 2px solid #d9b2ab;
-                            border-radius: 5px;
-                            background-color: #13122b;
-                            text-align: center;
-                            color: #ffffff;
-                            font-weight: bold;
-                        }
-                        QProgressBar::chunk {
-                            background-color: #b2edd2;
-                        }
-                    """
-                    )
-                    show_notification(
-                        "Break Time!", "Relax and breathe for a bit!"
-                    )
-                else:
-                    # If user says No, reset to new work session
-                    is_work_mode = True
-                    current_cycle_seconds = work_time_seconds
-                    break_progress.setRange(0, current_cycle_seconds)
-                    break_progress.setValue(0)
-            else:
-                # Switching to Break Mode
-                msg_box = QMessageBox(stats_window)
-                msg_box.setWindowTitle("End Break?")
-                msg_box.setText("Break's over! Ready to work again?")
-                msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+    #             reply = msg_box.exec()
 
-                # Full style sheet for entire QMessageBox (background, button)
-                msg_box.setStyleSheet(
-                    """
-                    QMessageBox {
-                        background-color: #13122b;
-                    }
-                    QLabel {
-                        color: #b2edd2;
-                        font-size: 14px;
-                        font-family: 'DejaVu Sans Mono';
-                    }
-                    QPushButton {
-                        background-color: #d9b2ab;
-                        color: #13122b;
-                        padding: 6px 12px;
-                        border-radius: 6px;
-                        font-weight: bold;
-                    }
-                    QPushButton:hover {
-                        background-color: #b2edd2;
-                        color: #13122b;
-                    }
-                """
-                )
+    #             if reply == QMessageBox.Yes:
+    #                 is_work_mode = False
+    #                 current_cycle_seconds = break_time_seconds
+    #                 break_progress.setRange(0, current_cycle_seconds)
+    #                 break_progress.setValue(0)
+    #                 break_progress.setStyleSheet(
+    #                     """
+    #                     QProgressBar {
+    #                         border: 2px solid #d9b2ab;
+    #                         border-radius: 5px;
+    #                         background-color: #13122b;
+    #                         text-align: center;
+    #                         color: #ffffff;
+    #                         font-weight: bold;
+    #                     }
+    #                     QProgressBar::chunk {
+    #                         background-color: #b2edd2;
+    #                     }
+    #                 """
+    #                 )
+    #                 show_notification(
+    #                     "Break Time!", "Relax and breathe for a bit!"
+    #                 )
+    #             else:
+    #                 # If user says No, reset to new work session
+    #                 is_work_mode = True
+    #                 current_cycle_seconds = work_time_seconds
+    #                 break_progress.setRange(0, current_cycle_seconds)
+    #                 break_progress.setValue(0)
+    #         else:
+    #             # Switching to Break Mode
+    #             msg_box = QMessageBox(stats_window)
+    #             msg_box.setWindowTitle("End Break?")
+    #             msg_box.setText("Break's over! Ready to work again?")
+    #             msg_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
-                reply = msg_box.exec()
+    #             # Full style sheet for entire QMessageBox (background, button)
+    #             msg_box.setStyleSheet(
+    #                 """
+    #                 QMessageBox {
+    #                     background-color: #13122b;
+    #                 }
+    #                 QLabel {
+    #                     color: #b2edd2;
+    #                     font-size: 14px;
+    #                     font-family: 'DejaVu Sans Mono';
+    #                 }
+    #                 QPushButton {
+    #                     background-color: #d9b2ab;
+    #                     color: #13122b;
+    #                     padding: 6px 12px;
+    #                     border-radius: 6px;
+    #                     font-weight: bold;
+    #                 }
+    #                 QPushButton:hover {
+    #                     background-color: #b2edd2;
+    #                     color: #13122b;
+    #                 }
+    #             """
+    #             )
 
-                if reply == QMessageBox.Yes:
-                    is_work_mode = True
-                    current_cycle_seconds = work_time_seconds
-                    break_progress.setRange(0, current_cycle_seconds)
-                    break_progress.setValue(0)
-                    break_progress.setStyleSheet(
-                        """
-                        QProgressBar {
-                            border: 2px solid #d9b2ab;
-                            border-radius: 5px;
-                            background-color: #13122b;
-                            text-align: center;
-                            color: #ffffff;
-                            font-weight: bold;
-                        }
-                        QProgressBar::chunk {
-                            background-color: #b2edd2;
-                        }
-                    """
-                    )
-                    show_notification("Work Time!", "Time to grind!")
-                else:
-                    # If user says No, reset to new work session
-                    is_work_mode = False
-                    current_cycle_seconds = break_time_seconds
-                    break_progress.setRange(0, current_cycle_seconds)
-                    break_progress.setValue(0)
+    #             reply = msg_box.exec()
 
-            break_progress.setRange(0, current_cycle_seconds)
-            break_progress.setValue(0)
+    #             if reply == QMessageBox.Yes:
+    #                 is_work_mode = True
+    #                 current_cycle_seconds = work_time_seconds
+    #                 break_progress.setRange(0, current_cycle_seconds)
+    #                 break_progress.setValue(0)
+    #                 break_progress.setStyleSheet(
+    #                     """
+    #                     QProgressBar {
+    #                         border: 2px solid #d9b2ab;
+    #                         border-radius: 5px;
+    #                         background-color: #13122b;
+    #                         text-align: center;
+    #                         color: #ffffff;
+    #                         font-weight: bold;
+    #                     }
+    #                     QProgressBar::chunk {
+    #                         background-color: #b2edd2;
+    #                     }
+    #                 """
+    #                 )
+    #                 show_notification("Work Time!", "Time to grind!")
+    #             else:
+    #                 # If user says No, reset to new work session
+    #                 is_work_mode = False
+    #                 current_cycle_seconds = break_time_seconds
+    #                 break_progress.setRange(0, current_cycle_seconds)
+    #                 break_progress.setValue(0)
 
-    progress_timer.timeout.connect(update_break_progress)
+    #         break_progress.setRange(0, current_cycle_seconds)
+    #         break_progress.setValue(0)
+
+    # progress_timer.timeout.connect(update_break_progress)
 
     # --- Load stress icons ---
     green_pixmap = QPixmap("images/green.png")
